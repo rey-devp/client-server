@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Ilustrasi animasi arsitektur Client-Server (Klien-Server) — request dan response melalui jaringan."
+    />
+    <title>Client-Server Architecture | Klien-Server</title>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/diagram.css" />
+    <link rel="stylesheet" href="css/animation.css" />
+  </head>
+  <body>
+    <div class="app" id="app" data-step="0">
+      <header class="hero">
+        <p class="hero__badge">Model Arsitektur</p>
+        <h1 class="hero__title">Client-Server <span class="hero__sep">/</span> Klien-Server</h1>
+        <p class="hero__subtitle">
+          Pemisahan tanggung jawab: klien mengirim permintaan, server memproses dan mengembalikan respons.
+        </p>
+      </header>
+
+      <section class="diagram-section" aria-label="Diagram arsitektur client-server">
+        <div class="diagram" role="img">
+          <div class="diagram__lane diagram__lane--left">
+            <article class="node node--user" data-node="user" id="node-user">
+              <div class="node__icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="40" height="40">
+                  <circle cx="24" cy="14" r="8" fill="currentColor" opacity="0.9" />
+                  <path
+                    d="M8 44c0-10 7-16 16-16s16 6 16 16"
+                    fill="currentColor"
+                    opacity="0.7"
+                  />
+                </svg>
+              </div>
+              <h2 class="node__title">Pengguna</h2>
+              <p class="node__title-en">User</p>
+            </article>
+            <div class="connector connector--user-client" aria-hidden="true"></div>
+            <article class="node node--client" data-node="client" id="node-client">
+              <div class="node__icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="40" height="40">
+                  <rect x="6" y="8" width="36" height="26" rx="3" fill="currentColor" opacity="0.85" />
+                  <rect x="18" y="36" width="12" height="4" rx="1" fill="currentColor" opacity="0.6" />
+                </svg>
+              </div>
+              <h2 class="node__title">Klien</h2>
+              <p class="node__title-en">Client</p>
+              <p class="node__hint">Browser / aplikasi</p>
+            </article>
+          </div>
+
+          <div class="diagram__lane diagram__lane--center">
+            <article class="node node--network" data-node="network" id="node-network">
+              <div class="node__icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="40" height="40">
+                  <circle cx="24" cy="24" r="4" fill="currentColor" />
+                  <circle cx="10" cy="12" r="3" fill="currentColor" opacity="0.7" />
+                  <circle cx="38" cy="12" r="3" fill="currentColor" opacity="0.7" />
+                  <circle cx="10" cy="36" r="3" fill="currentColor" opacity="0.7" />
+                  <circle cx="38" cy="36" r="3" fill="currentColor" opacity="0.7" />
+                  <line x1="24" y1="24" x2="10" y2="12" stroke="currentColor" stroke-width="1.5" opacity="0.5" />
+                  <line x1="24" y1="24" x2="38" y2="12" stroke="currentColor" stroke-width="1.5" opacity="0.5" />
+                  <line x1="24" y1="24" x2="10" y2="36" stroke="currentColor" stroke-width="1.5" opacity="0.5" />
+                  <line x1="24" y1="24" x2="38" y2="36" stroke="currentColor" stroke-width="1.5" opacity="0.5" />
+                </svg>
+              </div>
+              <h2 class="node__title">Jaringan</h2>
+              <p class="node__title-en">Network</p>
+              <p class="node__hint">HTTP / TCP</p>
+            </article>
+            <div class="packet-track" aria-hidden="true">
+              <span class="packet packet--request" id="packet-request"></span>
+              <span class="packet packet--response" id="packet-response"></span>
+            </div>
+          </div>
+
+          <div class="diagram__lane diagram__lane--right">
+            <article class="node node--server" data-node="server" id="node-server">
+              <div class="node__icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="40" height="40">
+                  <rect x="8" y="6" width="32" height="10" rx="2" fill="currentColor" opacity="0.9" />
+                  <rect x="8" y="19" width="32" height="10" rx="2" fill="currentColor" opacity="0.75" />
+                  <rect x="8" y="32" width="32" height="10" rx="2" fill="currentColor" opacity="0.6" />
+                  <circle cx="14" cy="11" r="2" fill="var(--color-bg)" />
+                  <circle cx="14" cy="24" r="2" fill="var(--color-bg)" />
+                  <circle cx="14" cy="37" r="2" fill="var(--color-bg)" />
+                </svg>
+              </div>
+              <h2 class="node__title">Server</h2>
+              <p class="node__title-en">Server</p>
+              <p class="node__hint">API / layanan</p>
+            </article>
+            <div class="connector connector--server-db" aria-hidden="true"></div>
+            <article class="node node--database" data-node="database" id="node-database">
+              <div class="node__icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="40" height="40">
+                  <ellipse cx="24" cy="14" rx="16" ry="6" fill="currentColor" opacity="0.9" />
+                  <path
+                    d="M8 14v14c0 3.3 7.2 6 16 6s16-2.7 16-6V14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    opacity="0.7"
+                  />
+                  <ellipse cx="24" cy="28" rx="16" ry="6" fill="none" stroke="currentColor" stroke-width="2" opacity="0.5" />
+                </svg>
+              </div>
+              <h2 class="node__title">Basis Data</h2>
+              <p class="node__title-en">Database</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="step-heading">
+        <div class="panel__progress">
+          <span class="panel__step-label" id="step-counter">Langkah 0 / 6</span>
+          <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" id="progress-bar">
+            <div class="progress-bar__fill" id="progress-fill"></div>
+          </div>
+        </div>
+        <div class="panel__text" aria-live="polite" id="status-panel">
+          <h2 class="panel__title-id" id="title-id">Siap</h2>
+          <p class="panel__title-en" id="title-en">Idle</p>
+          <p class="panel__desc" id="desc-id"></p>
+          <p class="panel__desc panel__desc--en" id="desc-en"></p>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="Kontrol animasi">
+        <div class="controls__group">
+          <button type="button" class="btn btn--secondary" id="btn-prev" aria-label="Langkah sebelumnya">
+            Sebelumnya
+          </button>
+          <button type="button" class="btn btn--primary" id="btn-play" aria-label="Putar animasi">
+            Putar
+          </button>
+          <button type="button" class="btn btn--secondary" id="btn-next" aria-label="Langkah berikutnya">
+            Berikutnya
+          </button>
+          <button type="button" class="btn btn--ghost" id="btn-reset" aria-label="Reset ke awal">
+            Reset
+          </button>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-autoplay" checked />
+          <span class="toggle__label">Autoplay setelah Putar</span>
+          <span class="toggle__hint">EN: Auto-advance on Play</span>
+        </label>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Ilustrasi Client-Server — HTML, CSS, JavaScript ·
+          <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>
+        </p>
+        <p class="footer__hint">Isi nama / NPM / link repo di README sebelum submit tugas.</p>
+      </footer>
+    </div>
+
+    <script src="js/scenes.js"></script>
+    <script src="js/animation-controller.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

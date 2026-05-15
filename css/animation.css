@@ -1,0 +1,178 @@
+/* Active nodes per step — driven by data-step on #app */
+
+[data-step="0"] .node {
+  opacity: 0.85;
+}
+
+[data-step="1"] [data-node="user"],
+[data-step="1"] [data-node="client"],
+[data-step="6"] [data-node="client"],
+[data-step="6"] [data-node="user"] {
+  opacity: 1;
+}
+
+[data-step="2"] [data-node="client"],
+[data-step="3"] [data-node="network"],
+[data-step="3"] [data-node="client"],
+[data-step="3"] [data-node="server"],
+[data-step="4"] [data-node="server"],
+[data-step="4"] [data-node="database"],
+[data-step="5"] [data-node="network"],
+[data-step="5"] [data-node="server"],
+[data-step="5"] [data-node="client"] {
+  opacity: 1;
+}
+
+.node.is-active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35), 0 12px 28px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+}
+
+.node--user.is-active {
+  border-color: var(--color-user);
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.25);
+}
+
+.node--client.is-active {
+  border-color: var(--color-client);
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.25);
+}
+
+.node--network.is-active {
+  border-color: var(--color-network);
+  box-shadow: 0 0 20px rgba(244, 114, 182, 0.2);
+}
+
+.node--server.is-active {
+  border-color: var(--color-server);
+  box-shadow: 0 0 20px rgba(251, 146, 60, 0.25);
+}
+
+.node--database.is-active {
+  border-color: var(--color-database);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.2);
+}
+
+.node.is-active .node__icon {
+  color: inherit;
+}
+
+.connector.is-active {
+  background: var(--color-accent);
+  opacity: 1;
+}
+
+.node--server.is-pulsing {
+  animation: serverPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes serverPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(251, 146, 60, 0);
+  }
+}
+
+/* Packets */
+
+.packet {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateX(-50%) scale(0.6);
+  transition: opacity 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.packet--request {
+  background: var(--color-request);
+  left: 0%;
+}
+
+.packet--response {
+  background: var(--color-response);
+  left: 100%;
+}
+
+.packet.is-visible {
+  opacity: 1;
+}
+
+.packet--request.is-traveling {
+  animation: packetToServer 1.1s ease-in-out forwards;
+}
+
+.packet--response.is-traveling {
+  animation: packetToClient 1.1s ease-in-out forwards;
+}
+
+.packet--request.is-at-client {
+  left: 8%;
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.packet--request.is-at-server {
+  left: 92%;
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.packet--response.is-at-server {
+  left: 92%;
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.packet--response.is-at-client {
+  left: 8%;
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+@keyframes packetToServer {
+  0% {
+    left: 8%;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  100% {
+    left: 92%;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes packetToClient {
+  0% {
+    left: 92%;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  100% {
+    left: 8%;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+[data-step="2"] .packet--request.is-visible:not(.is-traveling) {
+  left: 8%;
+  opacity: 1;
+}
+
+[data-step="3"] .packet--request.is-visible {
+  opacity: 1;
+}
+
+[data-step="5"] .packet--response.is-visible {
+  opacity: 1;
+}

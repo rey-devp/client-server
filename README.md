@@ -1,93 +1,70 @@
-# Ilustrasi Arsitektur Client-Server (Klien-Server)
+# Simulasi Arsitektur Client-Server Interaktif
 
-Proyek tugas: animasi interaktif **HTML, CSS, dan JavaScript** yang menjelaskan model arsitektur **Client-Server**, di-hosting dengan **GitHub Pages**.
+Proyek ini adalah sebuah **Simulasi Interaktif Waktu-Nyata (Real-time)** yang mendemonstrasikan model arsitektur **Client-Server**. Dibangun sepenuhnya menggunakan teknologi Vanilla modern (**HTML, CSS, JavaScript** murni tanpa _framework_), proyek ini dirancang untuk di-hosting dengan mudah di **GitHub Pages** dan menawarkan pengalaman visual tingkat lanjut.
 
-## Live demo
+## 🌟 Live Demo
 
-Setelah repo di-push dan GitHub Pages diaktifkan, URL biasanya:
+Akses simulasi interaktif ini secara langsung melalui GitHub Pages:
+**[https://rey-devp.github.io/client-server/](https://rey-devp.github.io/client-server/)**
 
-`https://<username-github>.github.io/<nama-repo>/`
+---
 
-Ganti placeholder di atas dengan URL Pages Anda, lalu lampirkan di laporan tugas.
+## 🎯 Konsep Simulasi Client-Server
 
-## Tentang model Client-Server
+Dalam arsitektur **Client-Server**, peran dalam sistem dibagi secara spesifik:
 
-Dalam arsitektur **client-server**, sistem dibagi menjadi dua peran utama. **Klien** (browser atau aplikasi di perangkat pengguna) mengirim **permintaan** ke **server** melalui **jaringan**. **Server** memproses permintaan, sering berinteraksi dengan **basis data**, lalu mengembalikan **respons** ke klien. Klien menampilkan hasil ke pengguna. Pemisahan ini memudahkan pemeliharaan, skala server, dan banyak klien yang mengakses layanan yang sama.
+1. **Klien (Aplikasi Klien)**: Berfungsi sebagai antarmuka pengguna (contoh: browser atau aplikasi _mobile_). Klien merakit data _request_ dan mengirimkannya melalui internet.
+2. **Jaringan (Internet)**: Media perantara fisik atau nirkabel yang mengantarkan paket data menggunakan protokol (contoh: HTTP/TCP).
+3. **Server Backend**: Komputer tangguh yang selalu sedia (_listening_) untuk menerima _request_ Klien, memvalidasi keamanan, mengolah logika bisnis, dan seringkali berinteraksi dengan **Basis Data** untuk mengambil atau menyimpan informasi.
+4. **Response**: Setelah data selesai diolah, Server mengembalikan status (contoh: `200 OK`) beserta data hasilnya (biasanya format JSON) kembali ke Klien.
 
-## Fitur halaman
+Proyek ini **bukan sekadar diagram statis**; melainkan sebuah sistem berbasis _state-machine_ di mana Anda bisa langsung mempraktekkan siklus di atas secara riil.
 
-- Label bilingual (Indonesia + English) per langkah
-- Autoplay saat **Putar** (dapat dimatikan lewat checkbox)
-- **Jeda**, **Sebelumnya**, **Berikutnya**, **Reset**
-- Pintasan keyboard: `←` `→` (langkah), `Space` (putar/jeda)
-- Animasi paket **request** (oranye) dan **response** (hijau)
+---
 
-## Struktur folder
+## ✨ Fitur Utama
+
+- **Terminal Interaktif Nyata**: Anda dapat mengetik sendiri _Payload Request_ (seperti `GET /api/users` atau `POST /data`) pada kolom Aplikasi Klien.
+- **Logika Aliran Waktu-Nyata**: Terdapat animasi _Packet_ data fisik yang bergerak presisi mengikuti kawat/jalur SVG dinamis.
+- **Log Terminal Server**: Sisi Server menampilkan log terminal (_console_) sungguhan yang mencatat kapan paket diterima, kapan _query database_ dilakukan, dan kapan respons disiapkan.
+- **Desain UI/UX Premium (_Glassmorphism_)**: Antarmuka dirancang menyerupai kaca (_frosted glass_) dengan _Dark Mode_ elegan yang dipadukan dengan efek Neon Glow yang merespons perubahan _state_ jaringan.
+- **100% Responsif & Anti-Bug**: Jika Anda membuka proyek ini melalui perangkat _Mobile_ (HP), layout akan secara otomatis berubah menjadi kolom vertikal tanpa merusak sedikitpun animasi aliran data jalurnya (mendukung _resize_ dinamis).
+
+---
+
+## 📂 Struktur Direktori
 
 ```text
-├── index.html
+├── index.html        # Kerangka UI, Terminal Mockup, dan Jalur SVG
 ├── css/
-│   ├── base.css
-│   ├── diagram.css
-│   └── animation.css
-├── js/
-│   ├── scenes.js
-│   ├── animation-controller.js
-│   └── main.js
-└── assets/icons/
+│   ├── base.css      # Variabel warna dasar, background glow, typography
+│   ├── diagram.css   # Layout CSS Grid utama dan styling Glassmorphism
+│   └── animation.css # Logika animasi interaktif dan transisi state
+└── js/
+    └── simulation.js # State-machine simulasi, manipulasi DOM, dan gerak SVG
 ```
 
-## Menjalankan lokal
+_(Perhatian: File JS lama seperti `main.js`, `scenes.js`, dan `animation-controller.js` tidak lagi digunakan karena seluruh kecerdasan simulasi kini telah disatukan secara efisien ke dalam `simulation.js`)_
 
-**Opsi 1 — buka file langsung**
+---
 
-Buka `index.html` di browser (double-click atau drag ke jendela browser).
+## 🚀 Menjalankan Secara Lokal
 
-**Opsi 2 — server sederhana (disarankan)**
+**Cara Termudah (No-Install)**:  
+Cukup _double-click_ atau _drag-and-drop_ file `index.html` ke dalam _browser_ (Chrome/Firefox/Edge) Anda.
 
-Di WSL / Linux:
+**Menggunakan Server Lokal (Direkomendasikan)**:  
+Jika Anda menggunakan VS Code, Anda bisa menginstal ekstensi **Live Server** dan mengklik "Go Live".  
+Atau, jika Anda memiliki Python:
 
 ```bash
-cd /mnt/c/Users/Hype\ AMD/Documents/Training/Client-server
-python3 -m http.server 8080
+python -m http.server 8080
 ```
 
-Buka `http://localhost:8080`
+Lalu buka `http://localhost:8080` di browser.
 
-Atau dengan Node:
+---
 
-```bash
-npx --yes serve .
-```
+## 📜 Lisensi
 
-## Deploy ke GitHub Pages
-
-1. Buat repository di GitHub (misalnya `client-server-arch`).
-2. Push isi folder ini ke branch `main`:
-
-   ```bash
-   git init
-   git add .
-   git commit -m "Add client-server architecture illustration"
-   git branch -M main
-   git remote add origin https://github.com/<username>/<repo>.git
-   git push -u origin main
-   ```
-
-3. Di GitHub: **Settings → Pages**
-   - **Source:** Deploy from a branch
-   - **Branch:** `main` / **/(root)**
-4. Tunggu beberapa menit; status hijau menampilkan URL situs.
-
-## Data tugas (isi sendiri)
-
-| Field | Isi |
-|-------|-----|
-| Nama | … |
-| NPM / Kelas | … |
-| Link GitHub Pages | … |
-| Link repository | … |
-
-## Lisensi
-
-Gunakan untuk keperluan tugas akademik; sesuaikan aturan pengumpulan dosen Anda.
+Kode ini disusun untuk keperluan demonstrasi akademik arsitektur jaringan. Modifikasi sepenuhnya diperbolehkan.

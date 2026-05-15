@@ -37,7 +37,21 @@
     onStepChange: renderStep,
   });
 
+  let lastRenderedStep = -1;
+
   function renderStep(step, scene) {
+    const playing = controller.isPlaying;
+    btnPlay.textContent = playing ? "Jeda" : "Putar";
+    btnPlay.setAttribute("aria-label", playing ? "Jeda animasi" : "Putar animasi");
+
+    packetRequest.style.animationPlayState = playing ? 'running' : 'paused';
+    packetResponse.style.animationPlayState = playing ? 'running' : 'paused';
+
+    if (step === lastRenderedStep) {
+      return;
+    }
+    lastRenderedStep = step;
+
     app.setAttribute("data-step", String(step));
 
     stepCounter.textContent = `Langkah ${step} / ${LAST_STEP_INDEX}`;
@@ -81,10 +95,6 @@
     }
 
     updatePackets(scene.packet);
-
-    const playing = controller.isPlaying;
-    btnPlay.textContent = playing ? "Jeda" : "Putar";
-    btnPlay.setAttribute("aria-label", playing ? "Jeda animasi" : "Putar animasi");
   }
 
   function resetPacketClasses(el) {

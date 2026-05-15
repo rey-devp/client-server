@@ -5,7 +5,7 @@ Proyek ini adalah sebuah **Simulasi Interaktif Waktu-Nyata (Real-time)** yang me
 ## 🌟 Live Demo
 
 Akses simulasi interaktif ini secara langsung melalui GitHub Pages:
-**[https://rey-devp.github.io/client-server/](https://rey-devp.github.io/client-server/)**
+**[https://rey-devp.github.io/client-server/](https://client-server-zeta.vercel.app/)**
 
 ---
 

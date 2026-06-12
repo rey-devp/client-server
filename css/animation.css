@@ -1,130 +1,106 @@
 /* ═══════════════════════════════════════════════════════════════════
-   animation.css — Micro-animations & Transition Effects
+   animation.css — Micro-animations
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ─── FSM Node Active Animation ───────────────────────────────────────── */
-.fsm-node {
-  animation: none;
-}
-.fsm-node.fsm-active {
-  animation: fsmNodeIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+/* ─── Hero ────────────────────────────────────────────────────────── */
+.hero         { animation: fadeInDown 0.7s ease-out both; }
+.hero p       { animation: fadeInUp 0.8s ease-out 0.15s both; }
+.state-indicator-bar { animation: fadeInUp 0.6s ease-out 0.3s both; }
 
-@keyframes fsmNodeIn {
-  0%   { transform: translateX(-4px) scale(0.97); opacity: 0.7; }
-  100% { transform: translateX(0) scale(1); opacity: 1; }
-}
-
-/* ─── Pseudocode Line Active Animation ────────────────────────────────── */
-.pseudo-line.pseudo-active {
-  animation: pseudoLineIn 0.3s ease forwards;
-}
-
-@keyframes pseudoLineIn {
-  0%   { background: rgba(139, 92, 246, 0.25); }
-  100% { background: rgba(139, 92, 246, 0.12); }
-}
-
-/* ─── State Indicator Change Animation ────────────────────────────────── */
-.current-state-label {
-  animation: none;
-}
-/* Re-trigger via JS by removing and re-adding the class — no extra keyframe needed */
-@keyframes stateLabelPop {
-  0%   { transform: scale(0.92); opacity: 0.6; }
-  60%  { transform: scale(1.05); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* ─── Network Hub Active Pulse ─────────────────────────────────────────── */
-.node-network.node-is-active {
-  animation: networkPulse 2s ease-in-out infinite;
-  color: var(--accent-purple);
-}
-
-@keyframes networkPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-  50%       { box-shadow: 0 0 0 12px rgba(139, 92, 246, 0); }
-}
-
-/* ─── Packet Travel Flow Glow ──────────────────────────────────────────── */
-.path-flow.active {
-  animation: flowGlow 1.4s ease-in-out;
-}
-
-@keyframes flowGlow {
-  0%   { opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-/* ─── Event Badge Pop-in ───────────────────────────────────────────────── */
-.event-badge.visible {
-  animation: badgePopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes badgePopIn {
-  0%   { transform: scale(0.8) translateY(-4px); opacity: 0; }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
-}
-
-/* ─── Step Description Fade-in ────────────────────────────────────────── */
-.nav-description h3,
-.nav-description p {
-  animation: descFadeIn 0.4s ease;
-}
-
-@keyframes descFadeIn {
-  0%   { opacity: 0; transform: translateY(6px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Visualization Node Activate ─────────────────────────────────────── */
-.node-container.node-is-active {
-  animation: nodeActivate 0.4s ease;
-}
-
-@keyframes nodeActivate {
-  0%   { transform: scale(0.99); }
-  50%  { transform: scale(1.01); }
-  100% { transform: scale(1); }
-}
-
-/* ─── Database Processing Spinner ─────────────────────────────────────── */
-.database-status.db-processing svg {
-  animation: dbSpin 2s linear infinite;
-  transform-origin: center;
-}
-
-@keyframes dbSpin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* ─── Hero Subtitle Fade ───────────────────────────────────────────────── */
-.hero p {
-  animation: fadeInUp 0.9s ease-out 0.2s both;
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── Progress Fill Glow Pulse ─────────────────────────────────────────── */
+/* ─── FSM Node activation ────────────────────────────────────────── */
+.fsm-node.fsm-active {
+  animation: fsmPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes fsmPop {
+  0%   { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Pseudocode line highlight ──────────────────────────────────── */
+.pseudo-line.pseudo-active {
+  animation: lineFlash 0.3s ease forwards;
+}
+@keyframes lineFlash {
+  0%   { background: rgba(139,92,246,0.28); }
+  100% { background: rgba(139,92,246,0.13); }
+}
+
+/* ─── Event badge pop-in ─────────────────────────────────────────── */
+.event-badge.visible {
+  animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes badgePop {
+  0%   { transform: scale(0.8) translateY(-4px); opacity: 0; }
+  100% { transform: scale(1) translateY(0);     opacity: 1; }
+}
+
+/* ─── Step description change ────────────────────────────────────── */
+.nav-description h3,
+.nav-description p {
+  animation: descSlide 0.35s ease both;
+}
+@keyframes descSlide {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Network hub active ─────────────────────────────────────────── */
+.node-network.node-is-active {
+  animation: networkPulse 2s ease-in-out infinite;
+}
+
+/* ─── Packet flow path glow ──────────────────────────────────────── */
+.path-flow.active {
+  animation: flowFade 1.4s ease-in-out;
+}
+@keyframes flowFade {
+  0%,100% { opacity: 0; }
+  15%,85% { opacity: 1; }
+}
+
+/* ─── Progress bar shine ─────────────────────────────────────────── */
 .progress-fill {
-  position: relative;
-  overflow: hidden;
+  position: relative; overflow: hidden;
 }
 .progress-fill::after {
   content: '';
-  position: absolute;
-  right: 0; top: 0;
-  width: 40px; height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.4));
+  position: absolute; right: 0; top: 0;
+  width: 36px; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.35));
   animation: progressShine 2s ease-in-out infinite;
 }
 @keyframes progressShine {
-  0%, 100% { opacity: 0; }
-  50%       { opacity: 1; }
+  0%,100% { opacity: 0; }
+  50%      { opacity: 1; }
 }
+
+/* ─── DB Spinner ─────────────────────────────────────────────────── */
+.db-icon.db-processing svg {
+  animation: spin 2s linear infinite;
+  transform-origin: center;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Node card active ───────────────────────────────────────────── */
+.node-card.node-is-active {
+  animation: cardActivate 0.4s ease;
+}
+@keyframes cardActivate {
+  0%   { transform: scale(0.99); }
+  60%  { transform: scale(1.005); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Blink cursor ───────────────────────────────────────────────── */
+@keyframes blink { 50% { opacity: 0; } }

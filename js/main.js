@@ -1,9 +1,9 @@
 /**
- * Main controller — Algoritma State Machine Visualizer
- * Menyinkronkan: FSM Diagram (kiri) + Visualisasi Client-Server (tengah) + Pseudocode (kanan)
+ * main.js — State Machine Visualizer Controller
  */
 (function initStateMachineDemo() {
-  // ─── DOM References ───────────────────────────────────────────────────────
+
+  // ─── DOM ───────────────────────────────────────────────────────────
   const stepCounterEl  = document.getElementById('step-counter');
   const progressFillEl = document.getElementById('progress-fill');
   const stepTitleEl    = document.getElementById('step-title');
@@ -16,7 +16,10 @@
   const btnNext  = document.getElementById('btn-next');
   const btnReset = document.getElementById('btn-reset');
 
-  // FSM Nodes (kiri)
+  const startScreen  = document.getElementById('viz-start-screen');
+  const vizContent   = document.getElementById('viz-content');
+  const btnStartMain = document.getElementById('btn-start-main');
+
   const fsmNodes = {
     idle:     document.getElementById('fsm-idle'),
     request:  document.getElementById('fsm-request'),
@@ -24,236 +27,294 @@
     response: document.getElementById('fsm-response'),
   };
 
-  // Visualization Nodes (tengah)
-  const vizNodes = {
-    client:   document.querySelector('.node-client'),
-    network:  document.getElementById('network-hub'),
-    server:   document.querySelector('.node-server'),
-    database: document.getElementById('database-icon'),
+  const vizClient  = document.getElementById('viz-client');
+  const vizServer  = document.getElementById('viz-server');
+  const networkHub = document.getElementById('network-hub');
+  const dbIcon     = document.getElementById('database-icon');
+  const serverLogs = document.getElementById('server-logs');
+  const logCursor  = document.getElementById('log-cursor');
+
+  const vizNodeMap = {
+    client:   vizClient,
+    server:   vizServer,
+    network:  networkHub,
+    database: dbIcon,
   };
 
-  // SVG Packet Elements
-  const svgPaths   = document.getElementById('svg-paths');
-  const pathBg     = document.getElementById('path-bg');
-  const pathReq    = document.getElementById('path-flow-req');
-  const pathRes    = document.getElementById('path-flow-res');
-  const packetReq  = document.getElementById('packet-request');
-  const packetRes  = document.getElementById('packet-response');
+  const svgEl     = document.getElementById('svg-paths');
+  const pathBg    = document.getElementById('path-bg');
+  const pathReq   = document.getElementById('path-flow-req');
+  const pathRes   = document.getElementById('path-flow-res');
+  const packetReq = document.getElementById('packet-request');
+  const packetRes = document.getElementById('packet-response');
 
-  // Server Logs
-  const serverLogsEl = document.getElementById('server-logs');
-  const cursorEl     = document.getElementById('log-cursor');
-
-  // Pseudocode Lines (kanan)
   const pseudoLines = document.querySelectorAll('.pseudo-line[data-line]');
 
-  // ─── State ────────────────────────────────────────────────────────────────
-  let lastRenderedStep = -1;
-  let animationActive  = false;
+  // ─── State ────────────────────────────────────────────────────────
+  let simulationStarted = false;
+  let lastRenderedStep  = -1;
 
-  // ─── Animation Controller ─────────────────────────────────────────────────
+  // ─── Controller ───────────────────────────────────────────────────
   const controller = new AnimationController({
     scenes: SCENES,
     intervalMs: 3200,
     onStepChange: renderStep,
   });
 
-  // ─── SVG Path Logic (ported from simulation.js) ───────────────────────────
-  function updatePaths() {
-    if (!svgPaths || !vizNodes.client || !vizNodes.network || !vizNodes.server) return;
-    const svgRect = svgPaths.getBoundingClientRect();
+  // ═══════════════════════════════════════════════════════════════════
+  // START
+  // ═══════════════════════════════════════════════════════════════════
+  function startSimulation() {
+    if (simulationStarted) return;
+    simulationStarted = true;
 
-    function center(el) {
+    startScreen.classList.add('hidden');
+    vizContent.classList.add('visible');
+
+    // Tunggu layout selesai baru hitung SVG
+    setTimeout(() => {
+      updatePaths();
+      lastRenderedStep = -1;          // Force render
+      renderStep(0, SCENES[0]);       // Render step 0
+    }, 100);
+  }
+
+  if (btnStartMain) btnStartMain.addEventListener('click', startSimulation);
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SVG PATH
+  // ═══════════════════════════════════════════════════════════════════
+  function updatePaths() {
+    if (!svgEl || !vizClient || !vizServer || !networkHub) return;
+    const svgRect = svgEl.getBoundingClientRect();
+    if (svgRect.width === 0 || svgRect.height === 0) return;
+
+    function mid(el) {
       const r = el.getBoundingClientRect();
-      return { x: r.left + r.width / 2 - svgRect.left, y: r.top + r.height / 2 - svgRect.top };
+      return {
+        x: r.left + r.width / 2 - svgRect.left,
+        y: r.top  + r.height / 2 - svgRect.top,
+      };
     }
 
-    const c = center(vizNodes.client);
-    const n = center(vizNodes.network);
-    const s = center(vizNodes.server);
-    const d = `M ${c.x} ${c.y} L ${n.x} ${n.y} L ${s.x} ${s.y}`;
+    const C = mid(vizClient);
+    const N = mid(networkHub);
+    const S = mid(vizServer);
+    const d = `M ${C.x} ${C.y} L ${N.x} ${N.y} L ${S.x} ${S.y}`;
 
     [pathBg, pathReq, pathRes].forEach(p => { if (p) p.setAttribute('d', d); });
-    if (packetReq) { packetReq.style.opacity = '0'; }
-    if (packetRes) { packetRes.style.opacity = '0'; }
   }
 
-  window.addEventListener('resize', updatePaths);
-  // Tunggu sampai layout & paint selesai sebelum menghitung koordinat SVG
-  requestAnimationFrame(() => requestAnimationFrame(updatePaths));
-  setTimeout(updatePaths, 300); // fallback untuk browser lambat
+  window.addEventListener('resize', () => { if (simulationStarted) updatePaths(); });
 
-  // ─── Tween Packet Animation ───────────────────────────────────────────────
-  function animatePacket(packet, path, reverse, duration, onComplete) {
-    if (!packet || !path) { if (onComplete) onComplete(); return; }
-    const totalLen = path.getTotalLength();
-    let startTime  = null;
-    packet.style.opacity = '1';
-
-    function step(ts) {
-      if (!startTime) startTime = ts;
-      const progress = Math.min((ts - startTime) / duration, 1);
-      const len = reverse ? totalLen * (1 - progress) : totalLen * progress;
-      const pt  = path.getPointAtLength(len);
-      packet.setAttribute('cx', pt.x);
-      packet.setAttribute('cy', pt.y);
-      if (progress < 1) {
-        requestAnimationFrame(step);
-      } else {
-        packet.style.opacity = '0.8';
-        if (onComplete) onComplete();
-      }
-    }
-    requestAnimationFrame(step);
-  }
-
-  function positionPacketAt(packet, path, atEnd) {
-    if (!packet || !path) return;
-    const len = atEnd ? path.getTotalLength() : 0;
-    const pt  = path.getPointAtLength(len);
-    packet.setAttribute('cx', pt.x);
-    packet.setAttribute('cy', pt.y);
-    packet.style.opacity = '1';
-  }
-
-  function hideAllPackets() {
+  // ═══════════════════════════════════════════════════════════════════
+  // PACKET HELPERS
+  // ═══════════════════════════════════════════════════════════════════
+  function hidePackets() {
     [packetReq, packetRes].forEach(p => { if (p) p.style.opacity = '0'; });
     if (pathReq) pathReq.classList.remove('active');
     if (pathRes) pathRes.classList.remove('active');
   }
 
-  // ─── Server Log Helper ────────────────────────────────────────────────────
-  const LOG_MESSAGES = {
-    0: null,
-    1: { text: 'Connection request detected from client...', cls: 'text-gray' },
-    2: { text: 'Building HTTP Request packet...', cls: 'text-req' },
-    3: { text: 'Packet in transit over TCP/IP...', cls: 'text-req' },
-    4: { text: 'Request received. Querying database...', cls: 'text-db' },
-    5: { text: 'Query OK. Building HTTP 200 OK response...', cls: 'text-res' },
-    6: { text: 'Response delivered. State reset to IDLE.', cls: 'text-green' },
+  function placePacket(pkt, atEnd) {
+    if (!pkt || !pathBg) return;
+    try {
+      const len = atEnd ? pathBg.getTotalLength() : 0;
+      const pt  = pathBg.getPointAtLength(len);
+      pkt.setAttribute('cx', pt.x);
+      pkt.setAttribute('cy', pt.y);
+      pkt.style.opacity = '1';
+    } catch(_) { /* path belum ada */ }
+  }
+
+  function animatePacket(pkt, flow, reverse, ms) {
+    if (!pkt || !pathBg) return;
+    try { pathBg.getTotalLength(); } catch(_) { return; }
+    if (flow) flow.classList.add('active');
+    const total = pathBg.getTotalLength();
+    let t0 = null;
+    pkt.style.opacity = '1';
+
+    function tick(ts) {
+      if (!t0) t0 = ts;
+      const prog = Math.min((ts - t0) / ms, 1);
+      const len  = reverse ? total * (1 - prog) : total * prog;
+      const pt   = pathBg.getPointAtLength(len);
+      pkt.setAttribute('cx', pt.x);
+      pkt.setAttribute('cy', pt.y);
+      if (prog < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SERVER LOG
+  // ═══════════════════════════════════════════════════════════════════
+  const LOGS = {
+    1: { text: 'User action diterima...', cls: 'log-req' },
+    2: { text: 'Membangun HTTP Request...', cls: 'log-req' },
+    3: { text: 'Paket dikirim via TCP/IP...', cls: 'log-req' },
+    4: { text: 'Request diterima. Query DB...', cls: 'log-db' },
+    5: { text: 'DB OK → Building Response...', cls: 'log-res' },
+    6: { text: 'Response terkirim → IDLE.', cls: 'log-done' },
   };
 
   function addLog(step) {
-    if (!serverLogsEl || !cursorEl) return;
-    const msg = LOG_MESSAGES[step];
-    if (!msg) return;
-    const div = document.createElement('div');
-    div.innerHTML = `<span class="text-gray">[${new Date().toLocaleTimeString()}]</span> <span class="${msg.cls}">${msg.text}</span>`;
-    serverLogsEl.insertBefore(div, cursorEl);
-    serverLogsEl.scrollTop = serverLogsEl.scrollHeight;
+    if (!serverLogs || !logCursor || !LOGS[step]) return;
+    const { text, cls } = LOGS[step];
+    const d = document.createElement('div');
+    const t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    d.innerHTML = `<span class="log-sys">[${t}]</span> <span class="${cls}">${text}</span>`;
+    serverLogs.insertBefore(d, logCursor);
+    serverLogs.scrollTop = serverLogs.scrollHeight;
   }
 
-  // ─── Render Step (Core) ───────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════
+  // RENDER STEP — sinkronisasi 3 panel
+  // ═══════════════════════════════════════════════════════════════════
   function renderStep(step, scene) {
-    // Update play button
-    btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
+    // Selalu update tombol play
+    if (btnPlay) btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
 
+    // Guard: jangan render sebelum start atau step sama
+    if (!simulationStarted) return;
     if (step === lastRenderedStep) return;
     lastRenderedStep = step;
 
-    // 1. Progress bar & counter
+    // 1. Progress
     const pct = LAST_STEP_INDEX === 0 ? 0 : (step / LAST_STEP_INDEX) * 100;
-    if (progressFillEl) progressFillEl.style.width = `${pct}%`;
-    if (stepCounterEl)  stepCounterEl.textContent = `Langkah ${step} / ${LAST_STEP_INDEX}`;
+    if (progressFillEl) progressFillEl.style.width = pct + '%';
+    if (stepCounterEl)  stepCounterEl.textContent  = `Langkah ${step} / ${LAST_STEP_INDEX}`;
 
-    // 2. Step description
+    // 2. Deskripsi
     if (stepTitleEl) stepTitleEl.textContent = scene.titleId;
     if (stepDescEl)  stepDescEl.textContent  = scene.descriptionId;
 
     // 3. Event badge
     if (eventBadgeEl) {
       if (scene.eventLabel) {
-        eventBadgeEl.textContent = `event: ${scene.eventLabel}()`;
+        eventBadgeEl.textContent = '⚡ ' + scene.eventLabel + '()';
         eventBadgeEl.classList.add('visible');
       } else {
+        eventBadgeEl.textContent = '';
         eventBadgeEl.classList.remove('visible');
       }
     }
 
-    // 4. Current state label
+    // 4. State label
     if (currentStateEl) {
-      currentStateEl.textContent = `currentState = ${scene.machineState.toUpperCase()}`;
-      currentStateEl.className = `current-state-label state-${scene.machineState}`;
+      currentStateEl.textContent = 'currentState = ' + scene.machineState.toUpperCase();
+      currentStateEl.className   = 'current-state-label state-' + scene.machineState;
     }
 
-    // 5. FSM Node Highlight (kiri)
-    Object.entries(fsmNodes).forEach(([key, el]) => {
-      if (!el) return;
-      el.classList.toggle('fsm-active', key === scene.machineState);
+    // 5. FSM nodes
+    Object.entries(fsmNodes).forEach(function([key, el]) {
+      if (el) el.classList.toggle('fsm-active', key === scene.machineState);
     });
 
-    // 6. Visualization Node Highlight (tengah)
+    // 6. Viz nodes
     const activeSet = new Set(scene.activeNodes);
-    Object.entries(vizNodes).forEach(([key, el]) => {
+    Object.entries(vizNodeMap).forEach(function([key, el]) {
       if (!el) return;
-      const isActive = activeSet.has(key);
-      el.classList.toggle('node-is-active', isActive);
-      if (key === 'database') el.classList.toggle('db-processing', scene.activeConnectors.includes('server-db'));
+      el.classList.toggle('node-is-active', activeSet.has(key));
+      if (key === 'database') {
+        el.classList.toggle('db-processing', scene.activeConnectors.includes('server-db'));
+      }
     });
 
-    // 7. Pseudocode Highlight (kanan)
+    // 7. Pseudocode highlight
     const activeLines = new Set(scene.pseudoLines);
-    pseudoLines.forEach(el => {
-      const ln = parseInt(el.dataset.line, 10);
+    pseudoLines.forEach(function(el) {
+      var ln = parseInt(el.getAttribute('data-line'), 10);
       el.classList.toggle('pseudo-active', activeLines.has(ln));
     });
 
-    // 8. Packet Animation
+    // 8. Packet animation
     updatePaths();
-    hideAllPackets();
+    hidePackets();
 
     if (scene.packet) {
-      const { type, state } = scene.packet;
-      const pkt    = type === 'request' ? packetReq : packetRes;
-      const flow   = type === 'request' ? pathReq   : pathRes;
+      var type = scene.packet.type;
+      var st   = scene.packet.state;
+      var pkt  = type === 'request' ? packetReq : packetRes;
+      var flow = type === 'request' ? pathReq   : pathRes;
 
-      if (state === 'at-client') {
-        positionPacketAt(pkt, pathBg, false);
-      } else if (state === 'at-server') {
-        positionPacketAt(pkt, pathBg, true);
-      } else if (state === 'traveling') {
-        if (flow) flow.classList.add('active');
-        animationActive = true;
-        const reverse = type === 'response';
-        animatePacket(pkt, pathBg, reverse, 1400, () => { animationActive = false; });
+      if (st === 'at-client') {
+        placePacket(pkt, false);
+      } else if (st === 'at-server') {
+        placePacket(pkt, true);
+      } else if (st === 'traveling') {
+        animatePacket(pkt, flow, type === 'response', 1400);
       }
     }
 
-    // 9. Server logs
+    // 9. Log
     addLog(step);
   }
 
-  // ─── Button Event Listeners ───────────────────────────────────────────────
-  btnPlay.addEventListener('click', () => {
+  // ═══════════════════════════════════════════════════════════════════
+  // BUTTONS
+  // ═══════════════════════════════════════════════════════════════════
+  btnPlay.addEventListener('click', function() {
+    if (!simulationStarted) { startSimulation(); return; }
     controller.togglePlay();
-    renderStep(controller.currentStep, controller.scene);
+    // Force update tombol
+    btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
   });
-  btnNext.addEventListener('click', () => controller.next(true));
-  btnPrev.addEventListener('click', () => controller.prev(true));
-  btnReset.addEventListener('click', () => {
-    if (serverLogsEl && cursorEl) {
-      // Clear logs except the cursor
-      while (serverLogsEl.firstChild && serverLogsEl.firstChild !== cursorEl) {
-        serverLogsEl.removeChild(serverLogsEl.firstChild);
-      }
-    }
-    hideAllPackets();
+
+  btnNext.addEventListener('click', function() {
+    if (!simulationStarted) { startSimulation(); return; }
+    controller.next(true);
+  });
+
+  btnPrev.addEventListener('click', function() {
+    if (!simulationStarted) { startSimulation(); return; }
+    controller.prev(true);
+  });
+
+  btnReset.addEventListener('click', function() {
+    if (!simulationStarted) return;
     controller.reset();
-    renderStep(controller.currentStep, controller.scene);
+    lastRenderedStep = -1;  // Force re-render
+    hidePackets();
+    // Clear logs
+    if (serverLogs && logCursor) {
+      while (serverLogs.firstChild && serverLogs.firstChild !== logCursor) {
+        serverLogs.removeChild(serverLogs.firstChild);
+      }
+      var init = document.createElement('div');
+      init.innerHTML = '<span class="log-sys">[SYS]</span> TCP:8080 listening...';
+      serverLogs.insertBefore(init, logCursor);
+    }
+    renderStep(0, SCENES[0]);
+    btnPlay.textContent = '▶ Play';
   });
 
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
-    if (e.target instanceof HTMLInputElement) return;
-    if (e.code === 'ArrowRight') { e.preventDefault(); controller.next(true); }
-    else if (e.code === 'ArrowLeft')  { e.preventDefault(); controller.prev(true); }
-    else if (e.code === 'Space') {
+  // ═══════════════════════════════════════════════════════════════════
+  // KEYBOARD — Arrow Left/Right + Space
+  // ═══════════════════════════════════════════════════════════════════
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    if (e.code === 'ArrowRight' || e.key === 'ArrowRight') {
       e.preventDefault();
+      if (!simulationStarted) { startSimulation(); return; }
+      controller.next(true);
+    }
+    else if (e.code === 'ArrowLeft' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (!simulationStarted) { startSimulation(); return; }
+      controller.prev(true);
+    }
+    else if (e.code === 'Space' || e.key === ' ') {
+      e.preventDefault();
+      if (!simulationStarted) { startSimulation(); return; }
       controller.togglePlay();
-      renderStep(controller.currentStep, controller.scene);
+      btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
     }
   });
 
-  // ─── Initial Render ───────────────────────────────────────────────────────
-  renderStep(0, SCENES[0]);
+  // ─── Initial state ────────────────────────────────────────────────
+  btnPlay.textContent = '▶ Play';
+
 })();

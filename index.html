@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Algoritma State Machine — Client-Server</title>
-  <meta name="description" content="Visualisasi interaktif Algoritma State Machine diimplementasikan pada Arsitektur Client-Server. Pelajari transisi state IDLE, REQUEST, PROCESS, dan RESPONSE.">
+  <meta name="description" content="Visualisasi interaktif Algoritma State Machine pada Arsitektur Client-Server.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/diagram.css">
@@ -12,7 +12,6 @@
 </head>
 <body>
 
-  <!-- Ambient Background -->
   <div class="background-effects" aria-hidden="true">
     <div class="glow glow-1"></div>
     <div class="glow glow-2"></div>
@@ -21,24 +20,24 @@
 
   <main class="app-container">
 
-    <!-- ═══ HEADER ═══════════════════════════════════════════════════════════ -->
+    <!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
     <header class="hero">
       <div class="hero-badge">Algoritma Pemrograman</div>
       <h1>State Machine <span class="highlight">Algorithm</span></h1>
       <p>Diimplementasikan pada Arsitektur <strong>Client-Server</strong> · Visualisasi Interaktif</p>
     </header>
 
-    <!-- ═══ CURRENT STATE INDICATOR ══════════════════════════════════════════ -->
+    <!-- ═══ STATE INDICATOR ══════════════════════════════════════════════ -->
     <div class="state-indicator-bar glass-panel">
       <span class="si-label">State Aktif:</span>
       <span id="current-state-label" class="current-state-label state-idle">currentState = IDLE</span>
-      <span id="event-badge" class="event-badge">event: USER_SEND()</span>
+      <span id="event-badge" class="event-badge"></span>
     </div>
 
-    <!-- ═══ MAIN 3-PANEL LAYOUT ═══════════════════════════════════════════════ -->
+    <!-- ═══ MAIN 3-PANEL LAYOUT ══════════════════════════════════════════ -->
     <section class="sm-layout">
 
-      <!-- ── PANEL KIRI: FSM State Diagram ──────────────────────────────── -->
+      <!-- ── PANEL KIRI: FSM State Diagram ─────────────────────────── -->
       <div class="panel-fsm glass-panel">
         <div class="panel-header">
           <span class="panel-icon">◈</span>
@@ -48,7 +47,7 @@
 
           <div class="fsm-node" id="fsm-idle">
             <div class="fsm-node-circle">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
             <div class="fsm-node-info">
               <span class="fsm-state-name">IDLE</span>
@@ -64,7 +63,7 @@
 
           <div class="fsm-node" id="fsm-request">
             <div class="fsm-node-circle">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </div>
             <div class="fsm-node-info">
               <span class="fsm-state-name">REQUEST</span>
@@ -80,11 +79,11 @@
 
           <div class="fsm-node" id="fsm-process">
             <div class="fsm-node-circle">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
             <div class="fsm-node-info">
               <span class="fsm-state-name">PROCESS</span>
-              <span class="fsm-state-desc">Memproses & DB</span>
+              <span class="fsm-state-desc">Proses &amp; DB query</span>
             </div>
           </div>
 
@@ -96,173 +95,183 @@
 
           <div class="fsm-node" id="fsm-response">
             <div class="fsm-node-circle">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div class="fsm-node-info">
               <span class="fsm-state-name">RESPONSE</span>
-              <span class="fsm-state-desc">Mengirim balasan</span>
+              <span class="fsm-state-desc">Kirim balasan</span>
             </div>
           </div>
 
-          <!-- Loop arrow back to IDLE -->
           <div class="fsm-loop-label">
-            <span>RESPONSE_RECEIVED() → kembali ke IDLE ↺</span>
+            <span>↺ RESPONSE_RECEIVED() → IDLE</span>
           </div>
 
         </div>
       </div>
 
-      <!-- ── PANEL TENGAH: Client-Server Visualization ─────────────────── -->
-      <div class="panel-visualization">
+      <!-- ── PANEL TENGAH: Visualisasi Client-Server ────────────────── -->
+      <div class="panel-visualization glass-panel">
 
-        <div class="architecture-grid">
-
-          <!-- SVG diletakkan di level architecture-grid agar path bisa menjangkau CLIENT dan SERVER -->
-          <svg class="data-path-svg" id="svg-paths" aria-hidden="true">
-            <defs>
-              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-              <linearGradient id="req-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"/>
-                <stop offset="100%" stop-color="#f59e0b" stop-opacity="1"/>
-              </linearGradient>
-              <linearGradient id="res-grad" x1="100%" y1="0%" x2="0%" y2="0%">
-                <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
-                <stop offset="100%" stop-color="#10b981" stop-opacity="1"/>
-              </linearGradient>
-            </defs>
-            <path id="path-bg" class="path-line-bg" d=""/>
-            <path id="path-flow-req" class="path-flow req-flow" d=""/>
-            <path id="path-flow-res" class="path-flow res-flow" d=""/>
-            <circle id="packet-request" class="packet req-packet" r="7" filter="url(#glow)"/>
-            <circle id="packet-response" class="packet res-packet" r="7" filter="url(#glow)"/>
-          </svg>
-
-          <!-- CLIENT -->
-          <div class="node-container node-client glass-panel">
-            <div class="panel-header">
-              <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
-              <h3>Aplikasi Klien</h3>
-            </div>
-            <div class="panel-body">
-              <div class="node-state-badge" id="client-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                Browser / App
-              </div>
-              <div class="node-desc">Membangun HTTP Request &amp; me-render Response yang diterima dari server.</div>
-            </div>
-          </div>
-
-          <!-- NETWORK HUB (SVG sudah dipindah ke level architecture-grid) -->
-          <div class="network-path-container">
-            <div class="node-network glass-icon" id="network-hub">
-              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              <span>Network</span>
-            </div>
-          </div>
-
-          <!-- SERVER -->
-          <div class="node-container node-server glass-panel">
-            <div class="panel-header header-server">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6" y2="6"/><line x1="6" y1="18" x2="6" y2="18"/></svg>
-              <h3>Server &amp; Logika</h3>
-            </div>
-            <div class="panel-body server-body">
-              <div class="server-logs" id="server-logs">
-                <div><span class="text-gray">[System]</span> TCP Listener aktif di port 8080...</div>
-                <div id="log-cursor" class="blinking-cursor">_</div>
-              </div>
-              <div class="database-status glass-icon" id="database-icon">
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                <span>Database</span>
-              </div>
-            </div>
-          </div>
-
+        <!-- Tombol START yang prominent -->
+        <div class="viz-start-screen" id="viz-start-screen">
+          <div class="start-icon">▶</div>
+          <p class="start-title">Mulai Simulasi</p>
+          <p class="start-desc">Tekan tombol di bawah untuk menjalankan visualisasi Algoritma State Machine langkah demi langkah.</p>
+          <button class="btn-start" id="btn-start-main">▶ Mulai Simulasi</button>
         </div>
+
+        <!-- Area visualisasi (tersembunyi saat belum dimulai) -->
+        <div class="viz-content" id="viz-content">
+          <div class="architecture-grid" id="architecture-grid">
+
+            <!-- SVG di level architecture-grid, cover seluruh area -->
+            <svg class="data-path-svg" id="svg-paths" aria-hidden="true">
+              <defs>
+                <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <linearGradient id="req-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.1"/>
+                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="1"/>
+                </linearGradient>
+                <linearGradient id="res-grad" x1="100%" y1="0%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.1"/>
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="1"/>
+                </linearGradient>
+              </defs>
+              <path id="path-bg"       class="path-line-bg"      d=""/>
+              <path id="path-flow-req" class="path-flow req-flow" d=""/>
+              <path id="path-flow-res" class="path-flow res-flow" d=""/>
+              <circle id="packet-request"  class="packet req-packet" r="7" filter="url(#glow-filter)"/>
+              <circle id="packet-response" class="packet res-packet" r="7" filter="url(#glow-filter)"/>
+            </svg>
+
+            <!-- CLIENT NODE -->
+            <div class="node-card node-client" id="viz-client">
+              <div class="node-card-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="node-card-title">Klien</span>
+              </div>
+              <div class="node-card-body">
+                <div class="node-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <span class="node-label">Browser / App</span>
+              </div>
+            </div>
+
+            <!-- NETWORK HUB -->
+            <div class="network-path-container">
+              <div class="node-network" id="network-hub">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <span>Network</span>
+              </div>
+            </div>
+
+            <!-- SERVER NODE -->
+            <div class="node-card node-server" id="viz-server">
+              <div class="node-card-header header-server">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>
+                <span class="node-card-title">Server</span>
+              </div>
+              <div class="node-card-body server-body">
+                <div class="server-logs" id="server-logs">
+                  <div><span class="log-sys">[SYS]</span> TCP:8080 listening...</div>
+                  <div id="log-cursor" class="blinking-cursor">_</div>
+                </div>
+                <div class="db-icon" id="database-icon">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                  <span>DB</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
-      <!-- ── PANEL KANAN: Live Pseudocode ───────────────────────────────── -->
+      <!-- ── PANEL KANAN: Pseudocode ────────────────────────────────── -->
       <div class="panel-pseudocode glass-panel">
         <div class="panel-header">
-          <span class="panel-icon">{ }</span>
-          <h3>Pseudocode Live</h3>
+          <span class="panel-icon">&lt;/&gt;</span>
+          <h3>Pseudocode</h3>
         </div>
         <div class="pseudo-body">
-          <pre class="pseudo-code" id="pseudo-code" aria-label="Pseudocode algoritma state machine"><span class="pseudo-line pline-comment" data-line="1"><span class="pc-comment">// Algoritma State Machine</span></span>
-<span class="pseudo-line pline-comment" data-line="2"><span class="pc-comment">// Client-Server Implementation</span></span>
+          <pre class="pseudo-code" id="pseudo-code"><span class="pseudo-line pc-cmt" data-line="1"><em>// State Machine Algorithm</em></span>
+<span class="pseudo-line pc-cmt" data-line="2"><em>// Client-Server Implementation</em></span>
 <span class="pseudo-line" data-line="3"> </span>
-<span class="pseudo-line" data-line="4"><span class="pc-kw">let</span> currentState = <span class="pc-state pc-idle">IDLE</span></span>
+<span class="pseudo-line" data-line="4"><b class="kw">let</b> currentState = <b class="st st-idle">IDLE</b></span>
 <span class="pseudo-line" data-line="5"> </span>
-<span class="pseudo-line" data-line="6"><span class="pc-kw">function</span> <span class="pc-fn">handleEvent</span>(event) {</span>
-<span class="pseudo-line" data-line="7">  <span class="pc-kw">switch</span> (currentState) {</span>
+<span class="pseudo-line" data-line="6"><b class="kw">function</b> <span class="fn">handleEvent</span>(e) {</span>
+<span class="pseudo-line" data-line="7">  <b class="kw">switch</b> (currentState) {</span>
 <span class="pseudo-line" data-line="8"> </span>
-<span class="pseudo-line" data-line="9">    <span class="pc-kw">case</span> <span class="pc-state pc-idle">IDLE</span>:</span>
-<span class="pseudo-line" data-line="10">      <span class="pc-kw">if</span> (event == <span class="pc-str">'USER_SEND'</span>) {</span>
-<span class="pseudo-line" data-line="11">        currentState = <span class="pc-state pc-request">REQUEST</span></span>
-<span class="pseudo-line" data-line="12">        <span class="pc-fn">buildHttpRequest</span>()</span>
-<span class="pseudo-line" data-line="13">      } <span class="pc-kw">break</span></span>
+<span class="pseudo-line" data-line="9">    <b class="kw">case</b> <b class="st st-idle">IDLE</b>:</span>
+<span class="pseudo-line" data-line="10">      <b class="kw">if</b> (e == <span class="str">'USER_SEND'</span>) {</span>
+<span class="pseudo-line" data-line="11">        currentState = <b class="st st-req">REQUEST</b></span>
+<span class="pseudo-line" data-line="12">        <span class="fn">buildRequest</span>()</span>
+<span class="pseudo-line" data-line="13">      } <b class="kw">break</b></span>
 <span class="pseudo-line" data-line="14"> </span>
-<span class="pseudo-line" data-line="15"> </span>
-<span class="pseudo-line" data-line="16">    <span class="pc-kw">case</span> <span class="pc-state pc-request">REQUEST</span>:</span>
-<span class="pseudo-line" data-line="17">      <span class="pc-comment">// paket melintasi jaringan</span></span>
-<span class="pseudo-line" data-line="18">      <span class="pc-kw">if</span> (event == <span class="pc-str">'PACKET_ARRIVED'</span>) {</span>
-<span class="pseudo-line" data-line="19">        currentState = <span class="pc-state pc-process">PROCESS</span></span>
-<span class="pseudo-line" data-line="20">        <span class="pc-fn">runBusinessLogic</span>()</span>
-<span class="pseudo-line" data-line="21">      } <span class="pc-kw">break</span></span>
-<span class="pseudo-line" data-line="22"> </span>
-<span class="pseudo-line" data-line="23">    <span class="pc-kw">case</span> <span class="pc-state pc-process">PROCESS</span>:</span>
-<span class="pseudo-line" data-line="24">      <span class="pc-comment">// server + database query</span></span>
-<span class="pseudo-line" data-line="25">      <span class="pc-kw">if</span> (event == <span class="pc-str">'DB_QUERY_DONE'</span>) {</span>
-<span class="pseudo-line" data-line="26">        currentState = <span class="pc-state pc-response">RESPONSE</span></span>
-<span class="pseudo-line" data-line="27">        <span class="pc-fn">buildHttpResponse</span>()</span>
-<span class="pseudo-line" data-line="28">      } <span class="pc-kw">break</span></span>
-<span class="pseudo-line" data-line="29"> </span>
-<span class="pseudo-line" data-line="30">    <span class="pc-kw">case</span> <span class="pc-state pc-response">RESPONSE</span>:</span>
-<span class="pseudo-line" data-line="31">      <span class="pc-comment">// respons kembali ke klien</span></span>
-<span class="pseudo-line" data-line="32">      <span class="pc-kw">if</span> (event == <span class="pc-str">'RESPONSE_RECEIVED'</span>) {</span>
-<span class="pseudo-line" data-line="33">        currentState = <span class="pc-state pc-idle">IDLE</span></span>
-<span class="pseudo-line" data-line="34">        <span class="pc-fn">updateClientUI</span>()</span>
-<span class="pseudo-line" data-line="35">      } <span class="pc-kw">break</span></span>
-<span class="pseudo-line" data-line="36"> </span>
-<span class="pseudo-line" data-line="37">  } <span class="pc-comment">// end switch</span></span>
-<span class="pseudo-line" data-line="38">}</span>
+<span class="pseudo-line" data-line="15">    <b class="kw">case</b> <b class="st st-req">REQUEST</b>:</span>
+<span class="pseudo-line" data-line="16">      <em class="pc-cmt">// paket → jaringan</em></span>
+<span class="pseudo-line" data-line="17">      <b class="kw">if</b> (e == <span class="str">'PKT_ARRIVED'</span>) {</span>
+<span class="pseudo-line" data-line="18">        currentState = <b class="st st-proc">PROCESS</b></span>
+<span class="pseudo-line" data-line="19">        <span class="fn">runLogic</span>()</span>
+<span class="pseudo-line" data-line="20">      } <b class="kw">break</b></span>
+<span class="pseudo-line" data-line="21"> </span>
+<span class="pseudo-line" data-line="22">    <b class="kw">case</b> <b class="st st-proc">PROCESS</b>:</span>
+<span class="pseudo-line" data-line="23">      <em class="pc-cmt">// server + DB query</em></span>
+<span class="pseudo-line" data-line="24">      <b class="kw">if</b> (e == <span class="str">'DB_DONE'</span>) {</span>
+<span class="pseudo-line" data-line="25">        currentState = <b class="st st-resp">RESPONSE</b></span>
+<span class="pseudo-line" data-line="26">        <span class="fn">buildResponse</span>()</span>
+<span class="pseudo-line" data-line="27">      } <b class="kw">break</b></span>
+<span class="pseudo-line" data-line="28"> </span>
+<span class="pseudo-line" data-line="29">    <b class="kw">case</b> <b class="st st-resp">RESPONSE</b>:</span>
+<span class="pseudo-line" data-line="30">      <em class="pc-cmt">// respons → klien</em></span>
+<span class="pseudo-line" data-line="31">      <b class="kw">if</b> (e == <span class="str">'RESP_RECEIVED'</span>) {</span>
+<span class="pseudo-line" data-line="32">        currentState = <b class="st st-idle">IDLE</b></span>
+<span class="pseudo-line" data-line="33">        <span class="fn">updateUI</span>()</span>
+<span class="pseudo-line" data-line="34">      } <b class="kw">break</b></span>
+<span class="pseudo-line" data-line="35"> </span>
+<span class="pseudo-line" data-line="36">  } <em class="pc-cmt">// end switch</em></span>
+<span class="pseudo-line" data-line="37">}</span>
 </pre>
         </div>
       </div>
 
     </section>
 
-    <!-- ═══ STEP NAVIGATOR ════════════════════════════════════════════════════ -->
-    <section class="step-navigator glass-panel">
+    <!-- ═══ STEP NAVIGATOR ══════════════════════════════════════════════ -->
+    <section class="step-navigator glass-panel" id="step-navigator">
       <div class="nav-top">
         <div class="nav-step-info">
           <span id="step-counter" class="step-counter">Langkah 0 / 6</span>
-          <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="6">
+          <div class="progress-track">
             <div class="progress-fill" id="progress-fill"></div>
           </div>
         </div>
         <div class="nav-controls">
-          <button id="btn-prev" class="nav-btn" aria-label="Langkah sebelumnya">◄ Prev</button>
-          <button id="btn-play" class="nav-btn nav-btn-primary" aria-label="Putar animasi">▶ Play</button>
-          <button id="btn-next" class="nav-btn" aria-label="Langkah berikutnya">Next ►</button>
-          <button id="btn-reset" class="nav-btn nav-btn-muted" aria-label="Reset">↺ Reset</button>
+          <button id="btn-prev"  class="nav-btn"             title="Langkah sebelumnya (←)">◄</button>
+          <button id="btn-play"  class="nav-btn nav-btn-primary" title="Play / Pause (Space)">▶ Play</button>
+          <button id="btn-next"  class="nav-btn"             title="Langkah berikutnya (→)">►</button>
+          <button id="btn-reset" class="nav-btn nav-btn-muted"  title="Reset">↺</button>
         </div>
       </div>
       <div class="nav-description">
         <h3 id="step-title">State: IDLE — Sistem Menunggu</h3>
-        <p id="step-desc">Sistem berada dalam state IDLE. Server aktif mendengarkan (listening) di port 8080, menunggu event masuk dari pengguna.</p>
+        <p id="step-desc">Sistem berada dalam state IDLE. Server aktif mendengarkan di port 8080, menunggu event dari pengguna.</p>
       </div>
-      <p class="nav-hint">Gunakan tombol ◄ ► atau tekan ← → untuk navigasi. Spasi untuk Play/Pause.</p>
+      <p class="nav-hint">← → navigasi · Space = Play/Pause · ↺ = Reset</p>
     </section>
 
     <footer class="footer">
-      <p>Algoritma State Machine · Implementasi Client-Server · Vanilla HTML/CSS/JS</p>
+      <p>Algoritma State Machine · Client-Server · Vanilla HTML/CSS/JS</p>
     </footer>
 
   </main>

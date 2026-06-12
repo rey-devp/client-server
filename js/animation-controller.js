@@ -70,7 +70,7 @@ class AnimationController {
       this._pauseForManual();
     }
     const nextStep = this.currentStep >= this.lastIndex ? 0 : this.currentStep + 1;
-    this.goTo(nextStep, false);
+    this.goTo(nextStep, true);
     if (!manual && this.isPlaying && this.autoplayEnabled) {
       this._startTimer();
     }
@@ -81,7 +81,7 @@ class AnimationController {
       this._pauseForManual();
     }
     const prevStep = this.currentStep <= 0 ? this.lastIndex : this.currentStep - 1;
-    this.goTo(prevStep, false);
+    this.goTo(prevStep, true);
     if (!manual && this.isPlaying && this.autoplayEnabled) {
       this._startTimer();
     }

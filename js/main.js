@@ -1,117 +1,93 @@
 /**
- * main.js — State Machine Visualizer Controller
+ * main.js — State Machine Visualizer
+ * Auto-play on page load, keyboard navigation (← → Space)
  */
-(function initStateMachineDemo() {
+(function () {
 
-  // ─── DOM ───────────────────────────────────────────────────────────
-  const stepCounterEl  = document.getElementById('step-counter');
-  const progressFillEl = document.getElementById('progress-fill');
-  const stepTitleEl    = document.getElementById('step-title');
-  const stepDescEl     = document.getElementById('step-desc');
-  const eventBadgeEl   = document.getElementById('event-badge');
-  const currentStateEl = document.getElementById('current-state-label');
+  // ─── DOM References ───────────────────────────────────────────────
+  var $ = function (id) { return document.getElementById(id); };
 
-  const btnPrev  = document.getElementById('btn-prev');
-  const btnPlay  = document.getElementById('btn-play');
-  const btnNext  = document.getElementById('btn-next');
-  const btnReset = document.getElementById('btn-reset');
+  var stepCounterEl  = $('step-counter');
+  var progressFillEl = $('progress-fill');
+  var eventBadgeEl   = $('event-badge');
+  var currentStateEl = $('current-state-label');
 
-  const startScreen  = document.getElementById('viz-start-screen');
-  const vizContent   = document.getElementById('viz-content');
-  const btnStartMain = document.getElementById('btn-start-main');
+  var btnPrev  = $('btn-prev');
+  var btnPlay  = $('btn-play');
+  var btnNext  = $('btn-next');
+  var btnReset = $('btn-reset');
 
-  const fsmNodes = {
-    idle:     document.getElementById('fsm-idle'),
-    request:  document.getElementById('fsm-request'),
-    process:  document.getElementById('fsm-process'),
-    response: document.getElementById('fsm-response'),
+  var fsmNodes = {
+    idle:     $('fsm-idle'),
+    request:  $('fsm-request'),
+    process:  $('fsm-process'),
+    response: $('fsm-response'),
   };
 
-  const vizClient  = document.getElementById('viz-client');
-  const vizServer  = document.getElementById('viz-server');
-  const networkHub = document.getElementById('network-hub');
-  const dbIcon     = document.getElementById('database-icon');
-  const serverLogs = document.getElementById('server-logs');
-  const logCursor  = document.getElementById('log-cursor');
+  var vizClient  = $('viz-client');
+  var vizServer  = $('viz-server');
+  var networkHub = $('network-hub');
+  var dbIcon     = $('database-icon');
+  var serverLogs = $('server-logs');
+  var logCursor  = $('log-cursor');
 
-  const vizNodeMap = {
+  var vizNodeMap = {
     client:   vizClient,
     server:   vizServer,
     network:  networkHub,
     database: dbIcon,
   };
 
-  const svgEl     = document.getElementById('svg-paths');
-  const pathBg    = document.getElementById('path-bg');
-  const pathReq   = document.getElementById('path-flow-req');
-  const pathRes   = document.getElementById('path-flow-res');
-  const packetReq = document.getElementById('packet-request');
-  const packetRes = document.getElementById('packet-response');
+  var svgEl     = $('svg-paths');
+  var pathBg    = $('path-bg');
+  var pathReq   = $('path-flow-req');
+  var pathRes   = $('path-flow-res');
+  var packetReq = $('packet-request');
+  var packetRes = $('packet-response');
 
-  const pseudoLines = document.querySelectorAll('.pseudo-line[data-line]');
+  var pseudoLines = document.querySelectorAll('.pseudo-line[data-line]');
 
   // ─── State ────────────────────────────────────────────────────────
-  let simulationStarted = false;
-  let lastRenderedStep  = -1;
+  var lastStep = -1;
 
   // ─── Controller ───────────────────────────────────────────────────
-  const controller = new AnimationController({
+  var controller = new AnimationController({
     scenes: SCENES,
     intervalMs: 3200,
     onStepChange: renderStep,
   });
 
   // ═══════════════════════════════════════════════════════════════════
-  // START
-  // ═══════════════════════════════════════════════════════════════════
-  function startSimulation() {
-    if (simulationStarted) return;
-    simulationStarted = true;
-
-    startScreen.classList.add('hidden');
-    vizContent.classList.add('visible');
-
-    // Tunggu layout selesai baru hitung SVG
-    setTimeout(() => {
-      updatePaths();
-      lastRenderedStep = -1;          // Force render
-      renderStep(0, SCENES[0]);       // Render step 0
-    }, 100);
-  }
-
-  if (btnStartMain) btnStartMain.addEventListener('click', startSimulation);
-
-  // ═══════════════════════════════════════════════════════════════════
   // SVG PATH
   // ═══════════════════════════════════════════════════════════════════
   function updatePaths() {
     if (!svgEl || !vizClient || !vizServer || !networkHub) return;
-    const svgRect = svgEl.getBoundingClientRect();
+    var svgRect = svgEl.getBoundingClientRect();
     if (svgRect.width === 0 || svgRect.height === 0) return;
 
     function mid(el) {
-      const r = el.getBoundingClientRect();
+      var r = el.getBoundingClientRect();
       return {
         x: r.left + r.width / 2 - svgRect.left,
         y: r.top  + r.height / 2 - svgRect.top,
       };
     }
 
-    const C = mid(vizClient);
-    const N = mid(networkHub);
-    const S = mid(vizServer);
-    const d = `M ${C.x} ${C.y} L ${N.x} ${N.y} L ${S.x} ${S.y}`;
+    var C = mid(vizClient);
+    var N = mid(networkHub);
+    var S = mid(vizServer);
+    var d = 'M ' + C.x + ' ' + C.y + ' L ' + N.x + ' ' + N.y + ' L ' + S.x + ' ' + S.y;
 
-    [pathBg, pathReq, pathRes].forEach(p => { if (p) p.setAttribute('d', d); });
+    [pathBg, pathReq, pathRes].forEach(function (p) { if (p) p.setAttribute('d', d); });
   }
 
-  window.addEventListener('resize', () => { if (simulationStarted) updatePaths(); });
+  window.addEventListener('resize', updatePaths);
 
   // ═══════════════════════════════════════════════════════════════════
   // PACKET HELPERS
   // ═══════════════════════════════════════════════════════════════════
   function hidePackets() {
-    [packetReq, packetRes].forEach(p => { if (p) p.style.opacity = '0'; });
+    [packetReq, packetRes].forEach(function (p) { if (p) p.style.opacity = '0'; });
     if (pathReq) pathReq.classList.remove('active');
     if (pathRes) pathRes.classList.remove('active');
   }
@@ -119,27 +95,27 @@
   function placePacket(pkt, atEnd) {
     if (!pkt || !pathBg) return;
     try {
-      const len = atEnd ? pathBg.getTotalLength() : 0;
-      const pt  = pathBg.getPointAtLength(len);
+      var len = atEnd ? pathBg.getTotalLength() : 0;
+      var pt  = pathBg.getPointAtLength(len);
       pkt.setAttribute('cx', pt.x);
       pkt.setAttribute('cy', pt.y);
       pkt.style.opacity = '1';
-    } catch(_) { /* path belum ada */ }
+    } catch (e) { /* path belum ready */ }
   }
 
   function animatePacket(pkt, flow, reverse, ms) {
     if (!pkt || !pathBg) return;
-    try { pathBg.getTotalLength(); } catch(_) { return; }
+    try { pathBg.getTotalLength(); } catch (e) { return; }
     if (flow) flow.classList.add('active');
-    const total = pathBg.getTotalLength();
-    let t0 = null;
+    var total = pathBg.getTotalLength();
+    var t0 = null;
     pkt.style.opacity = '1';
 
     function tick(ts) {
       if (!t0) t0 = ts;
-      const prog = Math.min((ts - t0) / ms, 1);
-      const len  = reverse ? total * (1 - prog) : total * prog;
-      const pt   = pathBg.getPointAtLength(len);
+      var prog = Math.min((ts - t0) / ms, 1);
+      var len  = reverse ? total * (1 - prog) : total * prog;
+      var pt   = pathBg.getPointAtLength(len);
       pkt.setAttribute('cx', pt.x);
       pkt.setAttribute('cy', pt.y);
       if (prog < 1) requestAnimationFrame(tick);
@@ -150,45 +126,41 @@
   // ═══════════════════════════════════════════════════════════════════
   // SERVER LOG
   // ═══════════════════════════════════════════════════════════════════
-  const LOGS = {
-    1: { text: 'User action diterima...', cls: 'log-req' },
-    2: { text: 'Membangun HTTP Request...', cls: 'log-req' },
-    3: { text: 'Paket dikirim via TCP/IP...', cls: 'log-req' },
-    4: { text: 'Request diterima. Query DB...', cls: 'log-db' },
-    5: { text: 'DB OK → Building Response...', cls: 'log-res' },
-    6: { text: 'Response terkirim → IDLE.', cls: 'log-done' },
+  var LOGS = {
+    1: { text: 'User action detected...', cls: 'log-req' },
+    2: { text: 'Building HTTP Request...', cls: 'log-req' },
+    3: { text: 'Packet sent via TCP/IP...', cls: 'log-req' },
+    4: { text: 'Request received. Querying DB...', cls: 'log-db' },
+    5: { text: 'DB OK. Building Response...', cls: 'log-res' },
+    6: { text: 'Response sent. Back to IDLE.', cls: 'log-done' },
   };
 
   function addLog(step) {
     if (!serverLogs || !logCursor || !LOGS[step]) return;
-    const { text, cls } = LOGS[step];
-    const d = document.createElement('div');
-    const t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    d.innerHTML = `<span class="log-sys">[${t}]</span> <span class="${cls}">${text}</span>`;
-    serverLogs.insertBefore(d, logCursor);
+    var info = LOGS[step];
+    var div = document.createElement('div');
+    var t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    div.innerHTML = '<span class="log-sys">[' + t + ']</span> <span class="' + info.cls + '">' + info.text + '</span>';
+    serverLogs.insertBefore(div, logCursor);
     serverLogs.scrollTop = serverLogs.scrollHeight;
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // RENDER STEP — sinkronisasi 3 panel
+  // RENDER STEP
   // ═══════════════════════════════════════════════════════════════════
   function renderStep(step, scene) {
-    // Selalu update tombol play
-    if (btnPlay) btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
+    // Update play button text
+    btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
 
-    // Guard: jangan render sebelum start atau step sama
-    if (!simulationStarted) return;
-    if (step === lastRenderedStep) return;
-    lastRenderedStep = step;
+    // Skip if same step
+    if (step === lastStep) return;
+    lastStep = step;
 
     // 1. Progress
-    const pct = LAST_STEP_INDEX === 0 ? 0 : (step / LAST_STEP_INDEX) * 100;
+    var pct = LAST_STEP_INDEX === 0 ? 0 : (step / LAST_STEP_INDEX) * 100;
     if (progressFillEl) progressFillEl.style.width = pct + '%';
-    if (stepCounterEl)  stepCounterEl.textContent  = `Langkah ${step} / ${LAST_STEP_INDEX}`;
+    if (stepCounterEl) stepCounterEl.textContent = 'Langkah ' + step + ' / ' + LAST_STEP_INDEX;
 
-    // 2. Deskripsi
-    if (stepTitleEl) stepTitleEl.textContent = scene.titleId;
-    if (stepDescEl)  stepDescEl.textContent  = scene.descriptionId;
 
     // 3. Event badge
     if (eventBadgeEl) {
@@ -204,48 +176,42 @@
     // 4. State label
     if (currentStateEl) {
       currentStateEl.textContent = 'currentState = ' + scene.machineState.toUpperCase();
-      currentStateEl.className   = 'current-state-label state-' + scene.machineState;
+      currentStateEl.className = 'current-state-label state-' + scene.machineState;
     }
 
     // 5. FSM nodes
-    Object.entries(fsmNodes).forEach(function([key, el]) {
-      if (el) el.classList.toggle('fsm-active', key === scene.machineState);
+    Object.keys(fsmNodes).forEach(function (key) {
+      if (fsmNodes[key]) fsmNodes[key].classList.toggle('fsm-active', key === scene.machineState);
     });
 
     // 6. Viz nodes
-    const activeSet = new Set(scene.activeNodes);
-    Object.entries(vizNodeMap).forEach(function([key, el]) {
-      if (!el) return;
-      el.classList.toggle('node-is-active', activeSet.has(key));
+    var activeSet = scene.activeNodes;
+    Object.keys(vizNodeMap).forEach(function (key) {
+      if (!vizNodeMap[key]) return;
+      vizNodeMap[key].classList.toggle('node-is-active', activeSet.indexOf(key) !== -1);
       if (key === 'database') {
-        el.classList.toggle('db-processing', scene.activeConnectors.includes('server-db'));
+        vizNodeMap[key].classList.toggle('db-processing', scene.activeConnectors.indexOf('server-db') !== -1);
       }
     });
 
-    // 7. Pseudocode highlight
-    const activeLines = new Set(scene.pseudoLines);
-    pseudoLines.forEach(function(el) {
+    // 7. Pseudocode
+    var activeLines = scene.pseudoLines;
+    pseudoLines.forEach(function (el) {
       var ln = parseInt(el.getAttribute('data-line'), 10);
-      el.classList.toggle('pseudo-active', activeLines.has(ln));
+      el.classList.toggle('pseudo-active', activeLines.indexOf(ln) !== -1);
     });
 
-    // 8. Packet animation
+    // 8. Packet
     updatePaths();
     hidePackets();
 
     if (scene.packet) {
-      var type = scene.packet.type;
-      var st   = scene.packet.state;
-      var pkt  = type === 'request' ? packetReq : packetRes;
-      var flow = type === 'request' ? pathReq   : pathRes;
+      var pkt  = scene.packet.type === 'request' ? packetReq : packetRes;
+      var flow = scene.packet.type === 'request' ? pathReq   : pathRes;
 
-      if (st === 'at-client') {
-        placePacket(pkt, false);
-      } else if (st === 'at-server') {
-        placePacket(pkt, true);
-      } else if (st === 'traveling') {
-        animatePacket(pkt, flow, type === 'response', 1400);
-      }
+      if (scene.packet.state === 'at-client') placePacket(pkt, false);
+      else if (scene.packet.state === 'at-server') placePacket(pkt, true);
+      else if (scene.packet.state === 'traveling') animatePacket(pkt, flow, scene.packet.type === 'response', 1400);
     }
 
     // 9. Log
@@ -255,27 +221,17 @@
   // ═══════════════════════════════════════════════════════════════════
   // BUTTONS
   // ═══════════════════════════════════════════════════════════════════
-  btnPlay.addEventListener('click', function() {
-    if (!simulationStarted) { startSimulation(); return; }
+  btnPlay.addEventListener('click', function () {
     controller.togglePlay();
-    // Force update tombol
     btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
   });
 
-  btnNext.addEventListener('click', function() {
-    if (!simulationStarted) { startSimulation(); return; }
-    controller.next(true);
-  });
+  btnNext.addEventListener('click', function () { controller.next(true); });
+  btnPrev.addEventListener('click', function () { controller.prev(true); });
 
-  btnPrev.addEventListener('click', function() {
-    if (!simulationStarted) { startSimulation(); return; }
-    controller.prev(true);
-  });
-
-  btnReset.addEventListener('click', function() {
-    if (!simulationStarted) return;
+  btnReset.addEventListener('click', function () {
     controller.reset();
-    lastRenderedStep = -1;  // Force re-render
+    lastStep = -1;
     hidePackets();
     // Clear logs
     if (serverLogs && logCursor) {
@@ -287,34 +243,35 @@
       serverLogs.insertBefore(init, logCursor);
     }
     renderStep(0, SCENES[0]);
-    btnPlay.textContent = '▶ Play';
   });
 
   // ═══════════════════════════════════════════════════════════════════
-  // KEYBOARD — Arrow Left/Right + Space
+  // KEYBOARD: ← → Space
   // ═══════════════════════════════════════════════════════════════════
-  document.addEventListener('keydown', function(e) {
+  document.addEventListener('keydown', function (e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-    if (e.code === 'ArrowRight' || e.key === 'ArrowRight') {
+    if (e.key === 'ArrowRight') {
       e.preventDefault();
-      if (!simulationStarted) { startSimulation(); return; }
       controller.next(true);
-    }
-    else if (e.code === 'ArrowLeft' || e.key === 'ArrowLeft') {
+    } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      if (!simulationStarted) { startSimulation(); return; }
       controller.prev(true);
-    }
-    else if (e.code === 'Space' || e.key === ' ') {
+    } else if (e.key === ' ') {
       e.preventDefault();
-      if (!simulationStarted) { startSimulation(); return; }
       controller.togglePlay();
       btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
     }
   });
 
-  // ─── Initial state ────────────────────────────────────────────────
-  btnPlay.textContent = '▶ Play';
+  // ═══════════════════════════════════════════════════════════════════
+  // AUTO-START: langsung play saat halaman dimuat
+  // ═══════════════════════════════════════════════════════════════════
+  setTimeout(function () {
+    updatePaths();
+    lastStep = -1;
+    renderStep(0, SCENES[0]);
+    controller.play();
+  }, 200);
 
 })();

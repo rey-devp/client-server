@@ -2,9 +2,9 @@
    animation.css — Micro-animations
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ─── Hero ────────────────────────────────────────────────────────── */
-.hero         { animation: fadeInDown 0.7s ease-out both; }
-.hero p       { animation: fadeInUp 0.8s ease-out 0.15s both; }
+/* Hero entrance */
+.hero   { animation: fadeInDown 0.7s ease-out both; }
+.hero p { animation: fadeInUp 0.8s ease-out 0.15s both; }
 .state-indicator-bar { animation: fadeInUp 0.6s ease-out 0.3s both; }
 
 @keyframes fadeInDown {
@@ -16,7 +16,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── FSM Node activation ────────────────────────────────────────── */
+/* FSM node activation */
 .fsm-node.fsm-active {
   animation: fsmPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -25,16 +25,16 @@
   100% { transform: scale(1); }
 }
 
-/* ─── Pseudocode line highlight ──────────────────────────────────── */
+/* Pseudocode line highlight */
 .pseudo-line.pseudo-active {
   animation: lineFlash 0.3s ease forwards;
 }
 @keyframes lineFlash {
   0%   { background: rgba(139,92,246,0.28); }
-  100% { background: rgba(139,92,246,0.13); }
+  100% { background: rgba(139,92,246,0.12); }
 }
 
-/* ─── Event badge pop-in ─────────────────────────────────────────── */
+/* Event badge pop */
 .event-badge.visible {
   animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -43,22 +43,12 @@
   100% { transform: scale(1) translateY(0);     opacity: 1; }
 }
 
-/* ─── Step description change ────────────────────────────────────── */
-.nav-description h3,
-.nav-description p {
-  animation: descSlide 0.35s ease both;
-}
-@keyframes descSlide {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Network hub active ─────────────────────────────────────────── */
+/* Network hub pulse */
 .node-network.node-is-active {
   animation: networkPulse 2s ease-in-out infinite;
 }
 
-/* ─── Packet flow path glow ──────────────────────────────────────── */
+/* Packet flow glow */
 .path-flow.active {
   animation: flowFade 1.4s ease-in-out;
 }
@@ -67,10 +57,8 @@
   15%,85% { opacity: 1; }
 }
 
-/* ─── Progress bar shine ─────────────────────────────────────────── */
-.progress-fill {
-  position: relative; overflow: hidden;
-}
+/* Progress bar shine */
+.progress-fill { position: relative; overflow: hidden; }
 .progress-fill::after {
   content: '';
   position: absolute; right: 0; top: 0;
@@ -80,27 +68,21 @@
 }
 @keyframes progressShine {
   0%,100% { opacity: 0; }
-  50%      { opacity: 1; }
+  50%     { opacity: 1; }
 }
 
-/* ─── DB Spinner ─────────────────────────────────────────────────── */
+/* DB processing spinner */
 .db-icon.db-processing svg {
   animation: spin 2s linear infinite;
-  transform-origin: center;
 }
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── Node card active ───────────────────────────────────────────── */
+/* Node card activate */
 .node-card.node-is-active {
-  animation: cardActivate 0.4s ease;
+  animation: cardPop 0.4s ease;
 }
-@keyframes cardActivate {
+@keyframes cardPop {
   0%   { transform: scale(0.99); }
   60%  { transform: scale(1.005); }
   100% { transform: scale(1); }
 }
-
-/* ─── Blink cursor ───────────────────────────────────────────────── */
-@keyframes blink { 50% { opacity: 0; } }

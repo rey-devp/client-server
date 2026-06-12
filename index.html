@@ -4,278 +4,362 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Algoritma State Machine — Client-Server</title>
-  <meta name="description" content="Visualisasi interaktif Algoritma State Machine pada Arsitektur Client-Server.">
+  
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/diagram.css">
-  <link rel="stylesheet" href="css/animation.css">
-</head>
-<body>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              idle: '#64748b',
+              request: '#f59e0b',
+              process: '#06b6d4',
+              response: '#10b981',
+              accent: '#8b5cf6',
+            },
+            surface: {
+              bg: '#080c14',
+              panel: 'rgba(15, 23, 42, 0.75)',
+              border: 'rgba(255, 255, 255, 0.1)',
+            }
+          },
+          animation: {
+            'glow-pulse': 'glowPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'spin-slow': 'spin 2s linear infinite',
+          },
+          keyframes: {
+            glowPulse: {
+              '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+              '50%': { opacity: .7, transform: 'scale(1.05)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
 
-  <div class="background-effects" aria-hidden="true">
-    <div class="glow glow-1"></div>
-    <div class="glow glow-2"></div>
-    <div class="glow glow-3"></div>
+  <!-- Custom Styles for Interactive States -->
+  <style type="text/tailwindcss">
+    @layer components {
+      .glass-panel {
+        @apply bg-surface-panel backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl;
+      }
+
+      /* Indicator */
+      .current-state-label { @apply font-mono text-sm font-bold px-3 py-1.5 rounded-md transition-all duration-300; }
+      .state-idle { @apply text-brand-idle border-brand-idle bg-brand-idle/10; }
+      .state-request { @apply text-brand-request border-brand-request bg-brand-request/10 shadow-[0_0_15px_rgba(245,158,11,0.3)]; }
+      .state-process { @apply text-brand-process border-brand-process bg-brand-process/10 shadow-[0_0_15px_rgba(6,182,212,0.3)]; }
+      .state-response { @apply text-brand-response border-brand-response bg-brand-response/10 shadow-[0_0_15px_rgba(16,185,129,0.3)]; }
+
+      /* FSM Nodes */
+      .fsm-node { @apply flex items-center gap-3 p-2 rounded-xl border border-transparent transition-all duration-300 bg-black/20; }
+      .fsm-active#fsm-idle { @apply border-brand-idle bg-brand-idle/10; }
+      .fsm-active#fsm-request { @apply border-brand-request bg-brand-request/10; }
+      .fsm-active#fsm-process { @apply border-brand-process bg-brand-process/10; }
+      .fsm-active#fsm-response { @apply border-brand-response bg-brand-response/10; }
+      
+      .fsm-circle { @apply w-9 h-9 rounded-full border-2 border-brand-idle flex items-center justify-center text-brand-idle shrink-0 transition-all duration-300; }
+      .fsm-active#fsm-idle .fsm-circle { @apply border-brand-idle text-brand-idle shadow-[0_0_10px_rgba(100,116,139,0.4)]; }
+      .fsm-active#fsm-request .fsm-circle { @apply border-brand-request text-brand-request shadow-[0_0_12px_rgba(245,158,11,0.5)]; }
+      .fsm-active#fsm-process .fsm-circle { @apply border-brand-process text-brand-process shadow-[0_0_15px_rgba(6,182,212,0.6)] animate-glow-pulse; }
+      .fsm-active#fsm-response .fsm-circle { @apply border-brand-response text-brand-response shadow-[0_0_12px_rgba(16,185,129,0.5)]; }
+
+      /* Architecture Nodes */
+      .node-card { @apply flex flex-col transition-all duration-300 relative z-10; }
+      .node-is-active.node-client { @apply shadow-[inset_3px_0_0_#f59e0b] bg-brand-accent/5; }
+      .node-is-active.node-server { @apply shadow-[inset_-3px_0_0_#06b6d4] bg-brand-accent/5; }
+      
+      .node-icon-wrap { @apply w-12 h-12 rounded-xl bg-white/5 border border-surface-border flex items-center justify-center text-slate-400 transition-all duration-300; }
+      .node-is-active.node-client .node-icon-wrap { @apply border-brand-request text-brand-request shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-110; }
+      
+      .node-network { @apply flex flex-col items-center justify-center gap-1 p-2 bg-surface-bg border border-surface-border rounded-full w-20 h-20 text-[0.65rem] text-slate-400 transition-all duration-300; }
+      .node-is-active.node-network { @apply border-brand-accent text-brand-accent shadow-[0_0_20px_rgba(139,92,246,0.5)]; }
+
+      /* Pseudocode */
+      .pseudo-line { @apply block w-full pr-4 border-l-4 border-transparent transition-all duration-200 whitespace-pre; }
+      .pseudo-line.pseudo-active { @apply bg-brand-accent/15 border-brand-accent text-slate-100; }
+      
+      /* Server DB */
+      .db-icon { @apply flex items-center justify-center gap-2 p-2 border border-surface-border rounded-lg bg-black/20 text-xs text-slate-400 transition-all duration-300; }
+      .db-icon.db-processing { @apply border-brand-process text-brand-process shadow-[0_0_15px_rgba(6,182,212,0.4)]; }
+      .db-icon.db-processing svg { @apply animate-spin-slow; }
+    }
+
+    /* Background Animation */
+    .bg-blobs { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.3; animation: float 20s infinite alternate; }
+    @keyframes float { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(-30px, 40px) scale(1.1); } }
+  </style>
+</head>
+<body class="font-sans bg-surface-bg text-slate-100 min-h-screen antialiased overflow-x-hidden selection:bg-brand-accent/30 selection:text-white">
+
+  <!-- Background -->
+  <div class="bg-blobs">
+    <div class="blob w-[500px] h-[500px] bg-brand-process -top-32 -left-32"></div>
+    <div class="blob w-[600px] h-[600px] bg-brand-accent -bottom-40 -right-40" style="animation-delay: -5s;"></div>
   </div>
 
-  <main class="app-container">
+  <main class="max-w-7xl mx-auto px-4 py-8 flex flex-col gap-6">
 
-    <!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
-    <header class="hero">
-      <div class="hero-badge">Algoritma Pemrograman</div>
-      <h1>State Machine <span class="highlight">Algorithm</span></h1>
-      <p>Diimplementasikan pada Arsitektur <strong>Client-Server</strong> · Visualisasi Interaktif</p>
+    <!-- Header -->
+    <header class="text-center animate-[fadeInDown_0.8s_ease-out]">
+      <div class="inline-block px-4 py-1 mb-3 rounded-full bg-brand-accent/10 border border-brand-accent/30 text-brand-accent text-xs font-bold tracking-widest uppercase">
+        Algoritma Pemrograman
+      </div>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
+        State Machine <span class="bg-gradient-to-r from-brand-process to-brand-accent bg-clip-text text-transparent">Algorithm</span>
+      </h1>
+      <p class="text-slate-400 text-sm md:text-base">Diimplementasikan pada Arsitektur <strong class="text-slate-200">Client-Server</strong> · Visualisasi Interaktif</p>
     </header>
 
-    <!-- ═══ STATE INDICATOR ══════════════════════════════════════════════ -->
-    <div class="state-indicator-bar glass-panel">
-      <span class="si-label">State Aktif:</span>
-      <span id="current-state-label" class="current-state-label state-idle">currentState = IDLE</span>
-      <span id="event-badge" class="event-badge"></span>
+    <!-- Top Control Bar -->
+    <div class="glass-panel flex flex-wrap items-center justify-between gap-4 p-4 animate-[fadeInUp_0.8s_ease-out_0.2s_both]">
+      
+      <!-- State Indicator -->
+      <div class="flex items-center gap-4 flex-wrap">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">State Aktif:</span>
+        <span id="current-state-label" class="font-mono text-sm font-bold px-3 py-1.5 rounded-md transition-all duration-300 state-idle">
+          currentState = IDLE
+        </span>
+        <span id="event-badge" class="font-mono text-xs font-bold text-brand-accent bg-brand-accent/10 border border-brand-accent/30 rounded px-3 py-1.5 opacity-0 -translate-y-1 transition-all duration-300 visible:opacity-100 visible:translate-y-0"></span>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+          <span id="step-counter" class="font-mono text-xs text-slate-400 whitespace-nowrap">Langkah 0 / 6</span>
+          <div class="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div id="progress-fill" class="h-full w-0 bg-gradient-to-r from-brand-process to-brand-accent transition-all duration-500 ease-out rounded-full relative">
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent to-white/30 animate-[progressShine_2s_infinite]"></div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-prev" class="px-3 py-2 rounded-lg border border-surface-border bg-white/5 hover:bg-white/10 active:scale-95 transition-all text-sm font-semibold" title="Prev Step">◄</button>
+          <button id="btn-play" class="px-4 py-2 rounded-lg border border-brand-accent bg-brand-accent text-white hover:brightness-110 shadow-[0_0_15px_rgba(139,92,246,0.4)] active:scale-95 transition-all text-sm font-semibold min-w-[80px]">▶ Play</button>
+          <button id="btn-next" class="px-3 py-2 rounded-lg border border-surface-border bg-white/5 hover:bg-white/10 active:scale-95 transition-all text-sm font-semibold" title="Next Step">►</button>
+          <button id="btn-reset" class="px-3 py-2 rounded-lg border border-transparent text-slate-400 hover:text-slate-200 active:scale-95 transition-all text-sm" title="Reset">↺</button>
+        </div>
+      </div>
     </div>
 
-    <!-- ═══ MAIN 3-PANEL LAYOUT ══════════════════════════════════════════ -->
-    <section class="sm-layout">
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 items-start">
 
-      <!-- ── PANEL KIRI: FSM State Diagram ─────────────────────────── -->
-      <div class="panel-fsm glass-panel">
-        <div class="panel-header">
-          <span class="panel-icon">◈</span>
-          <h3>State Diagram (FSM)</h3>
+      <!-- FSM PANEL -->
+      <div class="glass-panel sticky top-4 flex flex-col">
+        <div class="flex items-center gap-2 p-3 bg-black/20 border-b border-surface-border">
+          <span class="text-brand-accent text-sm">◈</span>
+          <h3 class="text-sm font-semibold text-slate-300">State Diagram</h3>
         </div>
-        <div class="fsm-body">
-
+        <div class="p-4 flex flex-col gap-1">
+          
+          <!-- IDLE -->
           <div class="fsm-node" id="fsm-idle">
-            <div class="fsm-node-circle">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div class="fsm-circle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
-            <div class="fsm-node-info">
-              <span class="fsm-state-name">IDLE</span>
-              <span class="fsm-state-desc">Menunggu event</span>
+            <div class="flex flex-col">
+              <span class="font-mono text-xs font-bold text-brand-idle transition-colors">IDLE</span>
+              <span class="text-[0.65rem] text-slate-500">Menunggu event</span>
             </div>
           </div>
 
-          <div class="fsm-connector">
-            <div class="fsm-arrow-line"></div>
-            <span class="fsm-event-tag">USER_SEND()</span>
-            <div class="fsm-arrow-head">▼</div>
+          <div class="flex flex-col items-center py-1">
+            <div class="w-[2px] h-3 bg-gradient-to-b from-surface-border to-white/10"></div>
+            <span class="font-mono text-[10px] text-brand-accent bg-brand-accent/10 border border-brand-accent/20 rounded px-1.5 py-0.5">USER_SEND()</span>
+            <div class="text-[10px] text-slate-500 leading-none mt-1">▼</div>
           </div>
 
+          <!-- REQUEST -->
           <div class="fsm-node" id="fsm-request">
-            <div class="fsm-node-circle">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <div class="fsm-circle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </div>
-            <div class="fsm-node-info">
-              <span class="fsm-state-name">REQUEST</span>
-              <span class="fsm-state-desc">Mengirim paket</span>
+            <div class="flex flex-col">
+              <span class="font-mono text-xs font-bold text-brand-idle transition-colors">REQUEST</span>
+              <span class="text-[0.65rem] text-slate-500">Kirim HTTP Req</span>
             </div>
           </div>
 
-          <div class="fsm-connector">
-            <div class="fsm-arrow-line"></div>
-            <span class="fsm-event-tag">PACKET_ARRIVED()</span>
-            <div class="fsm-arrow-head">▼</div>
+          <div class="flex flex-col items-center py-1">
+            <div class="w-[2px] h-3 bg-gradient-to-b from-surface-border to-white/10"></div>
+            <span class="font-mono text-[10px] text-brand-accent bg-brand-accent/10 border border-brand-accent/20 rounded px-1.5 py-0.5">PKT_ARRIVED()</span>
+            <div class="text-[10px] text-slate-500 leading-none mt-1">▼</div>
           </div>
 
+          <!-- PROCESS -->
           <div class="fsm-node" id="fsm-process">
-            <div class="fsm-node-circle">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <div class="fsm-circle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
-            <div class="fsm-node-info">
-              <span class="fsm-state-name">PROCESS</span>
-              <span class="fsm-state-desc">Proses &amp; DB query</span>
+            <div class="flex flex-col">
+              <span class="font-mono text-xs font-bold text-brand-idle transition-colors">PROCESS</span>
+              <span class="text-[0.65rem] text-slate-500">Query Database</span>
             </div>
           </div>
 
-          <div class="fsm-connector">
-            <div class="fsm-arrow-line"></div>
-            <span class="fsm-event-tag">DB_QUERY_DONE()</span>
-            <div class="fsm-arrow-head">▼</div>
+          <div class="flex flex-col items-center py-1">
+            <div class="w-[2px] h-3 bg-gradient-to-b from-surface-border to-white/10"></div>
+            <span class="font-mono text-[10px] text-brand-accent bg-brand-accent/10 border border-brand-accent/20 rounded px-1.5 py-0.5">DB_DONE()</span>
+            <div class="text-[10px] text-slate-500 leading-none mt-1">▼</div>
           </div>
 
+          <!-- RESPONSE -->
           <div class="fsm-node" id="fsm-response">
-            <div class="fsm-node-circle">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="fsm-circle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <div class="fsm-node-info">
-              <span class="fsm-state-name">RESPONSE</span>
-              <span class="fsm-state-desc">Kirim balasan</span>
+            <div class="flex flex-col">
+              <span class="font-mono text-xs font-bold text-brand-idle transition-colors">RESPONSE</span>
+              <span class="text-[0.65rem] text-slate-500">Kirim HTTP Res</span>
             </div>
           </div>
 
-          <div class="fsm-loop-label">
-            <span>↺ RESPONSE_RECEIVED() → IDLE</span>
+          <div class="mt-3 text-center p-1.5 bg-brand-accent/5 border border-dashed border-brand-accent/20 rounded-lg">
+            <span class="font-mono text-[10px] text-slate-400">↺ RESP_RECEIVED() → IDLE</span>
           </div>
 
         </div>
       </div>
 
-      <!-- ── PANEL TENGAH: Visualisasi Client-Server ────────────────── -->
-      <div class="panel-visualization glass-panel">
+      <!-- VISUALIZATION PANEL -->
+      <div class="glass-panel overflow-hidden flex flex-col min-h-[400px]">
+        <div class="grid grid-cols-[1fr_100px_1fr] flex-1 relative" id="architecture-grid">
+          
+          <!-- SVG Path Overlay -->
+          <svg class="absolute inset-0 w-full h-full z-[2] pointer-events-none overflow-visible" id="svg-paths">
+            <defs>
+              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <path id="path-bg" class="fill-none stroke-white/10 stroke-2" stroke-dasharray="6 5" d=""/>
+            <path id="path-flow-req" class="fill-none stroke-[3] stroke-brand-request opacity-0 transition-opacity duration-300 [&.active]:opacity-100" d=""/>
+            <path id="path-flow-res" class="fill-none stroke-[3] stroke-brand-response opacity-0 transition-opacity duration-300 [&.active]:opacity-100" d=""/>
+            <circle id="packet-request" class="fill-brand-request opacity-0 transition-opacity duration-200" r="7" filter="url(#glow)"/>
+            <circle id="packet-response" class="fill-brand-response opacity-0 transition-opacity duration-200" r="7" filter="url(#glow)"/>
+          </svg>
 
-        <!-- Tombol START yang prominent -->
-        <div class="viz-start-screen" id="viz-start-screen">
-          <div class="start-icon">▶</div>
-          <p class="start-title">Mulai Simulasi</p>
-          <p class="start-desc">Tekan tombol di bawah untuk menjalankan visualisasi Algoritma State Machine langkah demi langkah.</p>
-          <button class="btn-start" id="btn-start-main">▶ Mulai Simulasi</button>
-        </div>
-
-        <!-- Area visualisasi (tersembunyi saat belum dimulai) -->
-        <div class="viz-content" id="viz-content">
-          <div class="architecture-grid" id="architecture-grid">
-
-            <!-- SVG di level architecture-grid, cover seluruh area -->
-            <svg class="data-path-svg" id="svg-paths" aria-hidden="true">
-              <defs>
-                <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                  <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-                <linearGradient id="req-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.1"/>
-                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="1"/>
-                </linearGradient>
-                <linearGradient id="res-grad" x1="100%" y1="0%" x2="0%" y2="0%">
-                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.1"/>
-                  <stop offset="100%" stop-color="#10b981" stop-opacity="1"/>
-                </linearGradient>
-              </defs>
-              <path id="path-bg"       class="path-line-bg"      d=""/>
-              <path id="path-flow-req" class="path-flow req-flow" d=""/>
-              <path id="path-flow-res" class="path-flow res-flow" d=""/>
-              <circle id="packet-request"  class="packet req-packet" r="7" filter="url(#glow-filter)"/>
-              <circle id="packet-response" class="packet res-packet" r="7" filter="url(#glow-filter)"/>
-            </svg>
-
-            <!-- CLIENT NODE -->
-            <div class="node-card node-client" id="viz-client">
-              <div class="node-card-header">
-                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
-                <span class="node-card-title">Klien</span>
-              </div>
-              <div class="node-card-body">
-                <div class="node-icon-wrap">
-                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                </div>
-                <span class="node-label">Browser / App</span>
-              </div>
+          <!-- CLIENT -->
+          <div class="node-card node-client border-r border-surface-border" id="viz-client">
+            <div class="flex items-center gap-2 p-3 bg-black/20 border-b border-surface-border">
+              <div class="flex gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-red-500"></div><div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div></div>
+              <span class="text-xs font-semibold text-slate-300">Klien</span>
             </div>
-
-            <!-- NETWORK HUB -->
-            <div class="network-path-container">
-              <div class="node-network" id="network-hub">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </svg>
-                <span>Network</span>
+            <div class="flex-1 flex flex-col items-center justify-center gap-2 p-4">
+              <div class="node-icon-wrap">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
               </div>
+              <span class="text-xs text-slate-400">Browser / App</span>
             </div>
-
-            <!-- SERVER NODE -->
-            <div class="node-card node-server" id="viz-server">
-              <div class="node-card-header header-server">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>
-                <span class="node-card-title">Server</span>
-              </div>
-              <div class="node-card-body server-body">
-                <div class="server-logs" id="server-logs">
-                  <div><span class="log-sys">[SYS]</span> TCP:8080 listening...</div>
-                  <div id="log-cursor" class="blinking-cursor">_</div>
-                </div>
-                <div class="db-icon" id="database-icon">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                  <span>DB</span>
-                </div>
-              </div>
-            </div>
-
           </div>
-        </div>
 
+          <!-- NETWORK -->
+          <div class="relative z-10 flex items-center justify-center">
+            <div class="node-network" id="network-hub">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>Network</span>
+            </div>
+          </div>
+
+          <!-- SERVER -->
+          <div class="node-card node-server border-l border-surface-border" id="viz-server">
+            <div class="flex items-center gap-2 p-3 bg-brand-process/10 border-b border-surface-border">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="text-brand-process"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>
+              <span class="text-xs font-semibold text-brand-process">Server</span>
+            </div>
+            <div class="flex-1 flex flex-col gap-3 p-3">
+              <div class="w-full bg-black/50 border border-surface-border rounded-lg p-2 font-mono text-[11px] text-emerald-400 h-28 overflow-y-auto flex flex-col gap-1" id="server-logs">
+                <div><span class="text-slate-500">[SYS]</span> TCP:8080 listening...</div>
+                <div id="log-cursor" class="animate-[blink_1s_step-end_infinite]">_</div>
+              </div>
+              <div class="db-icon" id="database-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <span>Database</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
+    </div>
 
-      <!-- ── PANEL KANAN: Pseudocode ────────────────────────────────── -->
-      <div class="panel-pseudocode glass-panel">
-        <div class="panel-header">
-          <span class="panel-icon">&lt;/&gt;</span>
-          <h3>Pseudocode</h3>
-        </div>
-        <div class="pseudo-body">
-          <pre class="pseudo-code" id="pseudo-code"><span class="pseudo-line pc-cmt" data-line="1"><em>// State Machine Algorithm</em></span>
-<span class="pseudo-line pc-cmt" data-line="2"><em>// Client-Server Implementation</em></span>
+    <!-- PSEUDOCODE PANEL (Bottom Full Width) -->
+    <div class="glass-panel flex flex-col">
+      <div class="flex items-center gap-2 p-3 bg-black/20 border-b border-surface-border">
+        <span class="text-brand-accent font-mono font-bold">&lt;/&gt;</span>
+        <h3 class="text-sm font-semibold text-slate-300">Live Pseudocode</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <pre class="font-mono text-xs sm:text-sm leading-loose py-4 text-slate-400" style="counter-reset: pline;" id="pseudo-code">
+<span class="pseudo-line" data-line="1"><style>.pseudo-line::before { counter-increment: pline; content: counter(pline); display: inline-block; width: 2.5rem; text-align: right; margin-right: 1rem; color: #64748b; opacity: 0.5; }</style><em class="text-slate-500 italic">// State Machine Algorithm</em></span>
+<span class="pseudo-line" data-line="2"><em class="text-slate-500 italic">// Client-Server Implementation</em></span>
 <span class="pseudo-line" data-line="3"> </span>
-<span class="pseudo-line" data-line="4"><b class="kw">let</b> currentState = <b class="st st-idle">IDLE</b></span>
+<span class="pseudo-line" data-line="4"><span class="text-fuchsia-400 font-bold">let</span> currentState = <span class="font-bold text-brand-idle">IDLE</span></span>
 <span class="pseudo-line" data-line="5"> </span>
-<span class="pseudo-line" data-line="6"><b class="kw">function</b> <span class="fn">handleEvent</span>(e) {</span>
-<span class="pseudo-line" data-line="7">  <b class="kw">switch</b> (currentState) {</span>
+<span class="pseudo-line" data-line="6"><span class="text-fuchsia-400 font-bold">function</span> <span class="text-cyan-400">handleEvent</span>(event) {</span>
+<span class="pseudo-line" data-line="7">  <span class="text-fuchsia-400 font-bold">switch</span> (currentState) {</span>
 <span class="pseudo-line" data-line="8"> </span>
-<span class="pseudo-line" data-line="9">    <b class="kw">case</b> <b class="st st-idle">IDLE</b>:</span>
-<span class="pseudo-line" data-line="10">      <b class="kw">if</b> (e == <span class="str">'USER_SEND'</span>) {</span>
-<span class="pseudo-line" data-line="11">        currentState = <b class="st st-req">REQUEST</b></span>
-<span class="pseudo-line" data-line="12">        <span class="fn">buildRequest</span>()</span>
-<span class="pseudo-line" data-line="13">      } <b class="kw">break</b></span>
+<span class="pseudo-line" data-line="9">    <span class="text-fuchsia-400 font-bold">case</span> <span class="font-bold text-brand-idle">IDLE</span>:</span>
+<span class="pseudo-line" data-line="10">      <span class="text-fuchsia-400 font-bold">if</span> (event == <span class="text-emerald-300">'USER_SEND'</span>) {</span>
+<span class="pseudo-line" data-line="11">        currentState = <span class="font-bold text-brand-request">REQUEST</span></span>
+<span class="pseudo-line" data-line="12">        <span class="text-cyan-400">buildHttpRequest</span>()</span>
+<span class="pseudo-line" data-line="13">      } <span class="text-fuchsia-400 font-bold">break</span></span>
 <span class="pseudo-line" data-line="14"> </span>
-<span class="pseudo-line" data-line="15">    <b class="kw">case</b> <b class="st st-req">REQUEST</b>:</span>
-<span class="pseudo-line" data-line="16">      <em class="pc-cmt">// paket → jaringan</em></span>
-<span class="pseudo-line" data-line="17">      <b class="kw">if</b> (e == <span class="str">'PKT_ARRIVED'</span>) {</span>
-<span class="pseudo-line" data-line="18">        currentState = <b class="st st-proc">PROCESS</b></span>
-<span class="pseudo-line" data-line="19">        <span class="fn">runLogic</span>()</span>
-<span class="pseudo-line" data-line="20">      } <b class="kw">break</b></span>
+<span class="pseudo-line" data-line="15">    <span class="text-fuchsia-400 font-bold">case</span> <span class="font-bold text-brand-request">REQUEST</span>:</span>
+<span class="pseudo-line" data-line="16">      <em class="text-slate-500 italic">// paket melintasi jaringan TCP/IP</em></span>
+<span class="pseudo-line" data-line="17">      <span class="text-fuchsia-400 font-bold">if</span> (event == <span class="text-emerald-300">'PACKET_ARRIVED'</span>) {</span>
+<span class="pseudo-line" data-line="18">        currentState = <span class="font-bold text-brand-process">PROCESS</span></span>
+<span class="pseudo-line" data-line="19">        <span class="text-cyan-400">runBusinessLogic</span>()</span>
+<span class="pseudo-line" data-line="20">      } <span class="text-fuchsia-400 font-bold">break</span></span>
 <span class="pseudo-line" data-line="21"> </span>
-<span class="pseudo-line" data-line="22">    <b class="kw">case</b> <b class="st st-proc">PROCESS</b>:</span>
-<span class="pseudo-line" data-line="23">      <em class="pc-cmt">// server + DB query</em></span>
-<span class="pseudo-line" data-line="24">      <b class="kw">if</b> (e == <span class="str">'DB_DONE'</span>) {</span>
-<span class="pseudo-line" data-line="25">        currentState = <b class="st st-resp">RESPONSE</b></span>
-<span class="pseudo-line" data-line="26">        <span class="fn">buildResponse</span>()</span>
-<span class="pseudo-line" data-line="27">      } <b class="kw">break</b></span>
+<span class="pseudo-line" data-line="22">    <span class="text-fuchsia-400 font-bold">case</span> <span class="font-bold text-brand-process">PROCESS</span>:</span>
+<span class="pseudo-line" data-line="23">      <em class="text-slate-500 italic">// query database di server</em></span>
+<span class="pseudo-line" data-line="24">      <span class="text-fuchsia-400 font-bold">if</span> (event == <span class="text-emerald-300">'DB_QUERY_DONE'</span>) {</span>
+<span class="pseudo-line" data-line="25">        currentState = <span class="font-bold text-brand-response">RESPONSE</span></span>
+<span class="pseudo-line" data-line="26">        <span class="text-cyan-400">buildHttpResponse</span>()</span>
+<span class="pseudo-line" data-line="27">      } <span class="text-fuchsia-400 font-bold">break</span></span>
 <span class="pseudo-line" data-line="28"> </span>
-<span class="pseudo-line" data-line="29">    <b class="kw">case</b> <b class="st st-resp">RESPONSE</b>:</span>
-<span class="pseudo-line" data-line="30">      <em class="pc-cmt">// respons → klien</em></span>
-<span class="pseudo-line" data-line="31">      <b class="kw">if</b> (e == <span class="str">'RESP_RECEIVED'</span>) {</span>
-<span class="pseudo-line" data-line="32">        currentState = <b class="st st-idle">IDLE</b></span>
-<span class="pseudo-line" data-line="33">        <span class="fn">updateUI</span>()</span>
-<span class="pseudo-line" data-line="34">      } <b class="kw">break</b></span>
+<span class="pseudo-line" data-line="29">    <span class="text-fuchsia-400 font-bold">case</span> <span class="font-bold text-brand-response">RESPONSE</span>:</span>
+<span class="pseudo-line" data-line="30">      <em class="text-slate-500 italic">// respons HTTP dikirim ke klien</em></span>
+<span class="pseudo-line" data-line="31">      <span class="text-fuchsia-400 font-bold">if</span> (event == <span class="text-emerald-300">'RESPONSE_RECEIVED'</span>) {</span>
+<span class="pseudo-line" data-line="32">        currentState = <span class="font-bold text-brand-idle">IDLE</span></span>
+<span class="pseudo-line" data-line="33">        <span class="text-cyan-400">updateClientUI</span>()</span>
+<span class="pseudo-line" data-line="34">      } <span class="text-fuchsia-400 font-bold">break</span></span>
 <span class="pseudo-line" data-line="35"> </span>
-<span class="pseudo-line" data-line="36">  } <em class="pc-cmt">// end switch</em></span>
-<span class="pseudo-line" data-line="37">}</span>
-</pre>
-        </div>
+<span class="pseudo-line" data-line="36">  } <em class="text-slate-500 italic">// end switch</em></span>
+<span class="pseudo-line" data-line="37">}</span></pre>
       </div>
+    </div>
 
-    </section>
-
-    <!-- ═══ STEP NAVIGATOR ══════════════════════════════════════════════ -->
-    <section class="step-navigator glass-panel" id="step-navigator">
-      <div class="nav-top">
-        <div class="nav-step-info">
-          <span id="step-counter" class="step-counter">Langkah 0 / 6</span>
-          <div class="progress-track">
-            <div class="progress-fill" id="progress-fill"></div>
-          </div>
-        </div>
-        <div class="nav-controls">
-          <button id="btn-prev"  class="nav-btn"             title="Langkah sebelumnya (←)">◄</button>
-          <button id="btn-play"  class="nav-btn nav-btn-primary" title="Play / Pause (Space)">▶ Play</button>
-          <button id="btn-next"  class="nav-btn"             title="Langkah berikutnya (→)">►</button>
-          <button id="btn-reset" class="nav-btn nav-btn-muted"  title="Reset">↺</button>
-        </div>
-      </div>
-      <div class="nav-description">
-        <h3 id="step-title">State: IDLE — Sistem Menunggu</h3>
-        <p id="step-desc">Sistem berada dalam state IDLE. Server aktif mendengarkan di port 8080, menunggu event dari pengguna.</p>
-      </div>
-      <p class="nav-hint">← → navigasi · Space = Play/Pause · ↺ = Reset</p>
-    </section>
-
-    <footer class="footer">
-      <p>Algoritma State Machine · Client-Server · Vanilla HTML/CSS/JS</p>
+    <footer class="text-center text-xs text-slate-500 pt-4">
+      <p>Algoritma State Machine · Client-Server · Tailwind CSS</p>
     </footer>
 
   </main>
 
+  <style>
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes progressShine { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+
+  <!-- Scripts -->
   <script src="js/animation-controller.js"></script>
   <script src="js/scenes.js"></script>
   <script src="js/main.js"></script>

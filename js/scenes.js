@@ -1,13 +1,12 @@
 /**
- * SCENES — Data step-by-step Algoritma State Machine
- * pseudoLines merujuk ke data-line di HTML pseudocode panel
+ * SCENES — Step-by-step data untuk Algoritma State Machine
+ * pseudoLines merujuk data-line di HTML pseudocode
  */
 const SCENES = [
   {
     id: 0,
     titleId: "State: IDLE — Sistem Menunggu",
-    descriptionId:
-      "Sistem berada dalam state IDLE. Server aktif mendengarkan (listening) di port 8080, menunggu event masuk dari pengguna.",
+    descriptionId: "Sistem berada dalam state IDLE. Server aktif mendengarkan di port 8080, menunggu event masuk dari pengguna.",
     activeNodes: [],
     activeConnectors: [],
     packet: null,
@@ -18,8 +17,7 @@ const SCENES = [
   {
     id: 1,
     titleId: "Event: USER_SEND() — Trigger Diterima",
-    descriptionId:
-      "Pengguna menekan tombol, memicu event USER_SEND(). State machine menerima event ini dan mengevaluasi kondisi pada case IDLE.",
+    descriptionId: "Pengguna menekan tombol, memicu event USER_SEND(). State machine mengevaluasi kondisi pada case IDLE.",
     activeNodes: ["client"],
     activeConnectors: [],
     packet: { type: "request", state: "at-client" },
@@ -30,8 +28,7 @@ const SCENES = [
   {
     id: 2,
     titleId: "Transisi: IDLE → REQUEST",
-    descriptionId:
-      "currentState berubah menjadi REQUEST. Klien membungkus aksi menjadi HTTP Request (method, header, body) sesuai protokol.",
+    descriptionId: "currentState berubah menjadi REQUEST. Klien membungkus aksi menjadi HTTP Request (method, header, body).",
     activeNodes: ["client"],
     activeConnectors: [],
     packet: { type: "request", state: "at-client" },
@@ -42,44 +39,40 @@ const SCENES = [
   {
     id: 3,
     titleId: "State: REQUEST — Paket Melintasi Jaringan",
-    descriptionId:
-      "Dalam state REQUEST, paket HTTP dikirim melalui TCP/IP ke server. Mesin menunggu event PKT_ARRIVED() saat paket tiba.",
+    descriptionId: "Dalam state REQUEST, paket HTTP dikirim melalui TCP/IP. Mesin menunggu event PACKET_ARRIVED() saat paket tiba di server.",
     activeNodes: ["client", "network", "server"],
     activeConnectors: [],
     packet: { type: "request", state: "traveling" },
     machineState: "request",
     pseudoLines: [15, 16, 17],
-    eventLabel: "PKT_ARRIVED",
+    eventLabel: "PACKET_ARRIVED",
   },
   {
     id: 4,
     titleId: "Transisi: REQUEST → PROCESS",
-    descriptionId:
-      "Event PKT_ARRIVED() terpicu. currentState berubah ke PROCESS. Server menjalankan business logic dan melakukan query ke database.",
+    descriptionId: "Event PACKET_ARRIVED() terpicu. currentState berubah ke PROCESS. Server menjalankan business logic dan query database.",
     activeNodes: ["server", "database"],
     activeConnectors: ["server-db"],
     packet: { type: "request", state: "at-server" },
     machineState: "process",
     pseudoLines: [18, 19, 22, 23, 24],
-    eventLabel: "DB_DONE",
+    eventLabel: "DB_QUERY_DONE",
   },
   {
     id: 5,
     titleId: "Transisi: PROCESS → RESPONSE",
-    descriptionId:
-      "Database query selesai, event DB_DONE() terpicu. State berpindah ke RESPONSE. Server membangun HTTP Response 200 OK dan mengirimkannya.",
+    descriptionId: "DB_QUERY_DONE() terpicu. State berpindah ke RESPONSE. Server membangun HTTP Response 200 OK dan mengirimkannya.",
     activeNodes: ["server", "network", "client"],
     activeConnectors: [],
     packet: { type: "response", state: "traveling" },
     machineState: "response",
     pseudoLines: [25, 26, 29, 30, 31],
-    eventLabel: "RESP_RECEIVED",
+    eventLabel: "RESPONSE_RECEIVED",
   },
   {
     id: 6,
     titleId: "Transisi: RESPONSE → IDLE (Siklus Selesai)",
-    descriptionId:
-      "Event RESP_RECEIVED() terpicu. currentState kembali ke IDLE. Klien me-render UI dengan data baru. Satu siklus Request-Response selesai.",
+    descriptionId: "RESPONSE_RECEIVED() terpicu. currentState kembali ke IDLE. Klien me-render UI dengan data baru. Satu siklus selesai.",
     activeNodes: ["client"],
     activeConnectors: [],
     packet: { type: "response", state: "at-client" },

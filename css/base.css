@@ -149,20 +149,20 @@ body {
   font-size: 1rem;
   color: var(--accent-purple);
 }
-.header-server { background: rgba(6, 182, 212, 0.08); }
-.header-server svg { color: var(--state-process); }
-.dots { display: flex; gap: 5px; }
-.dot { width: 9px; height: 9px; border-radius: 50%; }
-.dot.red    { background: #ef4444; }
-.dot.yellow { background: #f59e0b; }
-.dot.green  { background: #10b981; }
 
 /* ─── State Indicator Bar ─────────────────────────────────────────────── */
 .state-indicator-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1.5rem;
+  flex-wrap: wrap;
+}
+.si-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 .si-label {
@@ -212,9 +212,3 @@ body {
   padding-top: 0.5rem;
 }
 
-/* ─── Keyframes ───────────────────────────────────────────────────────── */
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes blink { 50% { opacity: 0; } }

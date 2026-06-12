@@ -117,6 +117,29 @@
 
         <div class="architecture-grid">
 
+          <!-- SVG diletakkan di level architecture-grid agar path bisa menjangkau CLIENT dan SERVER -->
+          <svg class="data-path-svg" id="svg-paths" aria-hidden="true">
+            <defs>
+              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <linearGradient id="req-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#f59e0b" stop-opacity="1"/>
+              </linearGradient>
+              <linearGradient id="res-grad" x1="100%" y1="0%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#10b981" stop-opacity="1"/>
+              </linearGradient>
+            </defs>
+            <path id="path-bg" class="path-line-bg" d=""/>
+            <path id="path-flow-req" class="path-flow req-flow" d=""/>
+            <path id="path-flow-res" class="path-flow res-flow" d=""/>
+            <circle id="packet-request" class="packet req-packet" r="7" filter="url(#glow)"/>
+            <circle id="packet-response" class="packet res-packet" r="7" filter="url(#glow)"/>
+          </svg>
+
           <!-- CLIENT -->
           <div class="node-container node-client glass-panel">
             <div class="panel-header">
@@ -132,29 +155,8 @@
             </div>
           </div>
 
-          <!-- NETWORK PATH (SVG) -->
+          <!-- NETWORK HUB (SVG sudah dipindah ke level architecture-grid) -->
           <div class="network-path-container">
-            <svg class="data-path-svg" id="svg-paths">
-              <defs>
-                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                  <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-                <linearGradient id="req-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"/>
-                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="1"/>
-                </linearGradient>
-                <linearGradient id="res-grad" x1="100%" y1="0%" x2="0%" y2="0%">
-                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
-                  <stop offset="100%" stop-color="#10b981" stop-opacity="1"/>
-                </linearGradient>
-              </defs>
-              <path id="path-bg" class="path-line-bg" d=""/>
-              <path id="path-flow-req" class="path-flow req-flow" d=""/>
-              <path id="path-flow-res" class="path-flow res-flow" d=""/>
-              <circle id="packet-request" class="packet req-packet" r="7" filter="url(#glow)"/>
-              <circle id="packet-response" class="packet res-packet" r="7" filter="url(#glow)"/>
-            </svg>
             <div class="node-network glass-icon" id="network-hub">
               <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>

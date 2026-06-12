@@ -79,7 +79,9 @@
   }
 
   window.addEventListener('resize', updatePaths);
-  setTimeout(updatePaths, 150);
+  // Tunggu sampai layout & paint selesai sebelum menghitung koordinat SVG
+  requestAnimationFrame(() => requestAnimationFrame(updatePaths));
+  setTimeout(updatePaths, 300); // fallback untuk browser lambat
 
   // ─── Tween Packet Animation ───────────────────────────────────────────────
   function animatePacket(packet, path, reverse, duration, onComplete) {

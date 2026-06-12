@@ -75,7 +75,7 @@ class AnimationController {
       this._startTimer();
     }
   }
-
+//
   prev(manual = true) {
     if (manual) {
       this._pauseForManual();

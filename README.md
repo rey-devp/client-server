@@ -134,13 +134,9 @@ function handleEvent(event) {
 
 ```
 client-server/
-├── index.html                    ← Struktur UI 3-panel
-├── css/
-│   ├── base.css                  ← Design system: variabel warna per state, typography
-│   ├── diagram.css               ← Layout, FSM diagram, pseudocode panel, step navigator
-│   └── animation.css             ← Micro-animations sinkronisasi antar panel
+├── index.html                    ← Struktur UI Grid & styling (menggunakan Tailwind CSS CDN)
 └── js/
-    ├── animation-controller.js   ← Class AnimationController: play/pause/step state machine
+    ├── animation-controller.js   ← Class AnimationController: mesin manual step-by-step
     ├── scenes.js                 ← Data 7 langkah siklus FSM (machineState, pseudoLines, events)
     └── main.js                   ← Controller utama: sinkronisasi 3 panel + packet animation
 ```
@@ -150,11 +146,9 @@ client-server/
 #### `AnimationController` — Mesin Pengatur Langkah
 ```javascript
 class AnimationController {
-  constructor({ scenes, intervalMs, onStepChange }) { ... }
-  play()        // Mulai autoplay
-  pause()       // Hentikan autoplay
-  next(manual)  // Maju satu langkah
-  prev(manual)  // Mundur satu langkah
+  constructor({ scenes, onStepChange }) { ... }
+  next()        // Maju satu langkah
+  prev()        // Mundur satu langkah
   reset()       // Kembali ke langkah 0
   goTo(step)    // Loncat ke langkah tertentu
 }
@@ -179,10 +173,10 @@ Fungsi `renderStep(step, scene)` dipanggil setiap kali state berubah dan memperb
 
 - **State Diagram Interaktif** — Diagram FSM formal di panel kiri, node aktif bercahaya sesuai state
 - **Animasi Paket Real-time** — Paket data bergerak di jalur SVG dari Client → Network → Server → kembali
-- **Live Pseudocode Highlight** — Baris kode yang sedang "berjalan" di-highlight secara sinkron
+- **Live Pseudocode Highlight** — Baris kode yang sedang berjalan di-highlight
 - **Server Log Terminal** — Log real-time mencatat setiap transisi state
-- **Step Navigator** — Kontrol Play/Pause/Next/Prev/Reset + keyboard shortcut (`←` `→` `Space`)
-- **Responsif** — Layout otomatis menyesuaikan perangkat mobile
+- **Manual Step Navigator** — Kontrol langkah manual (Next/Prev/Reset) via UI atau Keyboard (`←`, `→`)
+- **Responsif & Tailwind UI** — Antarmuka mulus menggunakan desain *glassmorphism* dari Tailwind CSS
 
 ---
 
@@ -203,7 +197,6 @@ Lalu buka `http://localhost:8080`.
 **Keyboard Shortcuts:**
 | Tombol | Fungsi |
 |---|---|
-| `Space` | Play / Pause |
 | `→` | Langkah berikutnya |
 | `←` | Langkah sebelumnya |
 

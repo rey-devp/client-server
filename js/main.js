@@ -13,7 +13,6 @@
   var currentStateEl = $('current-state-label');
 
   var btnPrev  = $('btn-prev');
-  var btnPlay  = $('btn-play');
   var btnNext  = $('btn-next');
   var btnReset = $('btn-reset');
 
@@ -149,9 +148,6 @@
   // RENDER STEP
   // ═══════════════════════════════════════════════════════════════════
   function renderStep(step, scene) {
-    // Update play button text
-    btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
-
     // Skip if same step
     if (step === lastStep) return;
     lastStep = step;
@@ -221,13 +217,8 @@
   // ═══════════════════════════════════════════════════════════════════
   // BUTTONS
   // ═══════════════════════════════════════════════════════════════════
-  btnPlay.addEventListener('click', function () {
-    controller.togglePlay();
-    btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
-  });
-
-  btnNext.addEventListener('click', function () { controller.next(true); });
-  btnPrev.addEventListener('click', function () { controller.prev(true); });
+  btnNext.addEventListener('click', function () { controller.next(); });
+  btnPrev.addEventListener('click', function () { controller.prev(); });
 
   btnReset.addEventListener('click', function () {
     controller.reset();
@@ -239,39 +230,34 @@
         serverLogs.removeChild(serverLogs.firstChild);
       }
       var init = document.createElement('div');
-      init.innerHTML = '<span class="log-sys">[SYS]</span> TCP:8080 listening...';
+      init.innerHTML = '<span class="text-slate-500">[SYS]</span> TCP:8080 listening...';
       serverLogs.insertBefore(init, logCursor);
     }
     renderStep(0, SCENES[0]);
   });
 
   // ═══════════════════════════════════════════════════════════════════
-  // KEYBOARD: ← → Space
+  // KEYBOARD: ← →
   // ═══════════════════════════════════════════════════════════════════
   document.addEventListener('keydown', function (e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
     if (e.key === 'ArrowRight') {
       e.preventDefault();
-      controller.next(true);
+      controller.next();
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      controller.prev(true);
-    } else if (e.key === ' ') {
-      e.preventDefault();
-      controller.togglePlay();
-      btnPlay.textContent = controller.isPlaying ? '⏸ Pause' : '▶ Play';
+      controller.prev();
     }
   });
 
   // ═══════════════════════════════════════════════════════════════════
-  // AUTO-START: langsung play saat halaman dimuat
+  // INITIAL RENDER
   // ═══════════════════════════════════════════════════════════════════
   setTimeout(function () {
     updatePaths();
     lastStep = -1;
     renderStep(0, SCENES[0]);
-    controller.play();
   }, 200);
 
 })();

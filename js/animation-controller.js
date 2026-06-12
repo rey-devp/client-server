@@ -1,22 +1,16 @@
 /**
- * State machine for step navigation and autoplay.
+ * State machine for step navigation (manual only).
  */
 class AnimationController {
   /**
    * @param {object} options
    * @param {typeof SCENES} options.scenes
-   * @param {number} [options.intervalMs]
    * @param {(step: number, scene: object) => void} [options.onStepChange]
    */
   constructor(options) {
     this.scenes = options.scenes;
-    this.intervalMs = options.intervalMs ?? 2800;
     this.onStepChange = options.onStepChange ?? (() => {});
-
     this.currentStep = 0;
-    this.isPlaying = false;
-    this.autoplayEnabled = true;
-    this._timerId = null;
   }
 
   get scene() {
@@ -27,68 +21,17 @@ class AnimationController {
     return this.scenes.length - 1;
   }
 
-  play() {
-    if (this.isPlaying) {
-      return;
-    }
-    this.isPlaying = true;
-    if (this.autoplayEnabled) {
-      this._startTimer();
-    }
-    this._notify();
-  }
-
-  pause() {
-    this.isPlaying = false;
-    this._clearTimer();
-    this._notify();
-  }
-
-  togglePlay() {
-    if (this.isPlaying) {
-      this.pause();
-    } else {
-      this.play();
-    }
-  }
-
-  setAutoplay(enabled) {
-    this.autoplayEnabled = Boolean(enabled);
-    if (this.isPlaying) {
-      this._clearTimer();
-      if (this.autoplayEnabled) {
-        this._startTimer();
-      }
-    }
-  }
-
-  /**
-   * Manual navigation pauses autoplay timer.
-   */
-  next(manual = true) {
-    if (manual) {
-      this._pauseForManual();
-    }
+  next() {
     const nextStep = this.currentStep >= this.lastIndex ? 0 : this.currentStep + 1;
     this.goTo(nextStep, true);
-    if (!manual && this.isPlaying && this.autoplayEnabled) {
-      this._startTimer();
-    }
   }
-//
-  prev(manual = true) {
-    if (manual) {
-      this._pauseForManual();
-    }
+
+  prev() {
     const prevStep = this.currentStep <= 0 ? this.lastIndex : this.currentStep - 1;
     this.goTo(prevStep, true);
-    if (!manual && this.isPlaying && this.autoplayEnabled) {
-      this._startTimer();
-    }
   }
 
   reset() {
-    this.pause();
     this.goTo(0, false);
   }
 
@@ -101,25 +44,6 @@ class AnimationController {
     this.currentStep = clamped;
     if (notify) {
       this._notify();
-    }
-  }
-
-  _pauseForManual() {
-    this._clearTimer();
-    this.isPlaying = false;
-  }
-
-  _startTimer() {
-    this._clearTimer();
-    this._timerId = window.setInterval(() => {
-      this.next(false);
-    }, this.intervalMs);
-  }
-
-  _clearTimer() {
-    if (this._timerId !== null) {
-      window.clearInterval(this._timerId);
-      this._timerId = null;
     }
   }
 

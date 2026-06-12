@@ -2,14 +2,7 @@
 
 Proyek ini adalah **visualisasi interaktif Algoritma State Machine (FSM — Finite State Machine)** yang didemonstrasikan melalui siklus komunikasi arsitektur **Client-Server**. Dibangun dengan Vanilla HTML, CSS, dan JavaScript murni tanpa framework.
 
-<<<<<<< HEAD
-🔗 **Live Demo:** [https://rey-devp.github.io/client-server/](https://rey-devp.github.io/client-server/)
-=======
-## 🌟 Live Demo
-
-Akses simulasi interaktif ini secara langsung melalui GitHub Pages:
-**[Coba simulasi disini](https://client-server-zeta.vercel.app/)**
->>>>>>> 41b9ad05fa2e9ea9c15be0ebd7b27b9e1a21ea44
+🔗 **Live Demo:** [https://client-server-zeta.vercel.app/](https://client-server-zeta.vercel.app/)
 
 ---
 

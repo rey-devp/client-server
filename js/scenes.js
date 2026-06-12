@@ -1,98 +1,119 @@
 /**
- * Single source of truth for animation steps (Client-Server architecture).
- * @global SCENES
+ * SCENES — Data step-by-step untuk visualisasi Algoritma State Machine.
+ * Setiap scene merepresentasikan satu langkah dalam siklus FSM Client-Server.
  */
 const SCENES = [
   {
     id: 0,
-    titleId: "Siap",
-    titleEn: "Idle",
+    titleId: "State: IDLE — Sistem Menunggu",
+    titleEn: "State: IDLE — System Waiting",
     descriptionId:
-      "Diagram dalam keadaan diam. Client-Server berarti klien dan server terpisah: klien meminta layanan, server menyediakannya.",
+      "Sistem berada dalam state IDLE. Server aktif mendengarkan (listening) di port 8080, menunggu event masuk dari pengguna.",
     descriptionEn:
-      "The diagram is at rest. In client-server architecture, the client requests services and the server provides them.",
+      "System is in IDLE state. Server is listening on port 8080, waiting for an incoming event.",
     activeNodes: [],
     activeConnectors: [],
     packet: null,
     pulseServer: false,
+    machineState: "idle",
+    pseudoLines: [4, 9],
+    eventLabel: null,
   },
   {
     id: 1,
-    titleId: "Pengguna mengirim aksi",
-    titleEn: "User action",
+    titleId: "Event: USER_SEND() Diterima",
+    titleEn: "Event: USER_SEND() Received",
     descriptionId:
-      "Pengguna berinteraksi dengan antarmuka di sisi klien (klik, formulir, dll.). Aksi ini belum dikirim ke server.",
+      "Pengguna men-klik tombol, meng-trigger event USER_SEND(). State machine menerima event ini. Kondisi `event == 'USER_SEND'` bernilai TRUE.",
     descriptionEn:
-      "The user interacts with the client-side interface. This action has not yet been sent to the server.",
-    activeNodes: ["user", "client"],
-    activeConnectors: ["user-client"],
-    packet: null,
-    pulseServer: false,
-  },
-  {
-    id: 2,
-    titleId: "Klien membangun permintaan",
-    titleEn: "Client builds request",
-    descriptionId:
-      "Klien membungkus aksi menjadi permintaan HTTP (misalnya GET atau POST) dengan header dan body jika perlu.",
-    descriptionEn:
-      "The client wraps the action into an HTTP request (e.g. GET or POST) with headers and optional body.",
+      "User clicks a button, triggering USER_SEND() event. The state machine receives this event. Condition `event == 'USER_SEND'` evaluates TRUE.",
     activeNodes: ["client"],
     activeConnectors: [],
     packet: { type: "request", state: "at-client" },
     pulseServer: false,
+    machineState: "idle",
+    pseudoLines: [10, 11],
+    eventLabel: "USER_SEND",
+  },
+  {
+    id: 2,
+    titleId: "Transisi: IDLE → REQUEST",
+    titleEn: "Transition: IDLE → REQUEST",
+    descriptionId:
+      "currentState berubah menjadi REQUEST. Klien membungkus aksi menjadi HTTP Request dengan method, header, dan body sesuai protokol.",
+    descriptionEn:
+      "currentState changes to REQUEST. Client wraps the action into an HTTP Request with method, headers, and body.",
+    activeNodes: ["client"],
+    activeConnectors: [],
+    packet: { type: "request", state: "at-client" },
+    pulseServer: false,
+    machineState: "request",
+    pseudoLines: [11, 12, 16],
+    eventLabel: null,
   },
   {
     id: 3,
-    titleId: "Permintaan melintasi jaringan",
-    titleEn: "Request over network",
+    titleId: "State: REQUEST — Paket Melintasi Jaringan",
+    titleEn: "State: REQUEST — Packet Traversing Network",
     descriptionId:
-      "Paket permintaan dikirim melalui jaringan (internet/LAN) ke alamat server. Protokol umum: HTTP di atas TCP.",
+      "Dalam state REQUEST, paket HTTP dikirim melalui TCP/IP. Mesin menunggu event PACKET_ARRIVED() yang terjadi saat paket tiba di server.",
     descriptionEn:
-      "The request packet travels over the network to the server address, typically HTTP over TCP.",
+      "In REQUEST state, HTTP packet is sent over TCP/IP. Machine waits for PACKET_ARRIVED() event when the packet reaches the server.",
     activeNodes: ["client", "network", "server"],
     activeConnectors: [],
     packet: { type: "request", state: "traveling" },
     pulseServer: false,
+    machineState: "request",
+    pseudoLines: [17, 18],
+    eventLabel: "PACKET_ARRIVED",
   },
   {
     id: 4,
-    titleId: "Server memproses",
-    titleEn: "Server processing",
+    titleId: "Transisi: REQUEST → PROCESS",
+    titleEn: "Transition: REQUEST → PROCESS",
     descriptionId:
-      "Server menerima permintaan, menjalankan logika bisnis, dan sering mengakses basis data untuk membaca atau menulis data.",
+      "Event PACKET_ARRIVED() ter-trigger. currentState berubah ke PROCESS. Server menjalankan business logic dan melakukan query ke database.",
     descriptionEn:
-      "The server handles the request, runs business logic, and often reads or writes data in the database.",
+      "PACKET_ARRIVED() event fires. currentState changes to PROCESS. Server runs business logic and queries the database.",
     activeNodes: ["server", "database"],
     activeConnectors: ["server-db"],
     packet: { type: "request", state: "at-server" },
     pulseServer: true,
+    machineState: "process",
+    pseudoLines: [23, 24, 25, 26],
+    eventLabel: "DB_QUERY_DONE",
   },
   {
     id: 5,
-    titleId: "Respons kembali",
-    titleEn: "Response returns",
+    titleId: "Transisi: PROCESS → RESPONSE",
+    titleEn: "Transition: PROCESS → RESPONSE",
     descriptionId:
-      "Server mengirim respons HTTP (status, header, body) kembali melalui jaringan ke klien.",
+      "Database query selesai, event DB_QUERY_DONE() ter-trigger. State berpindah ke RESPONSE. Server membangun HTTP Response 200 OK dan mengirimkannya.",
     descriptionEn:
-      "The server sends an HTTP response (status, headers, body) back through the network to the client.",
+      "DB query completes, DB_QUERY_DONE() fires. State moves to RESPONSE. Server builds HTTP 200 OK Response and sends it back.",
     activeNodes: ["server", "network", "client"],
     activeConnectors: [],
     packet: { type: "response", state: "traveling" },
     pulseServer: false,
+    machineState: "response",
+    pseudoLines: [30, 31, 32],
+    eventLabel: "RESPONSE_RECEIVED",
   },
   {
     id: 6,
-    titleId: "Klien menampilkan data",
-    titleEn: "Client renders UI",
+    titleId: "Transisi: RESPONSE → IDLE (Siklus Selesai)",
+    titleEn: "Transition: RESPONSE → IDLE (Cycle Complete)",
     descriptionId:
-      "Klien mem-parsing respons dan memperbarui tampilan untuk pengguna. Siklus request–response selesai.",
+      "Event RESPONSE_RECEIVED() ter-trigger. currentState kembali ke IDLE. Klien me-render UI dengan data baru. Satu siklus FSM Request-Response selesai.",
     descriptionEn:
-      "The client parses the response and updates the UI for the user. One request–response cycle is complete.",
-    activeNodes: ["client", "user"],
-    activeConnectors: ["user-client"],
+      "RESPONSE_RECEIVED() fires. currentState returns to IDLE. Client renders the UI with new data. One FSM Request-Response cycle is complete.",
+    activeNodes: ["client"],
+    activeConnectors: [],
     packet: { type: "response", state: "at-client" },
     pulseServer: false,
+    machineState: "idle",
+    pseudoLines: [32, 33, 4],
+    eventLabel: null,
   },
 ];
 

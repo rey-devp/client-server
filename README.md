@@ -1,70 +1,214 @@
-# Simulasi Arsitektur Client-Server Interaktif
+# Algoritma State Machine — Implementasi pada Arsitektur Client-Server
 
-Proyek ini adalah sebuah **Simulasi Interaktif Waktu-Nyata (Real-time)** yang mendemonstrasikan model arsitektur **Client-Server**. Dibangun sepenuhnya menggunakan teknologi Vanilla modern (**HTML, CSS, JavaScript** murni tanpa _framework_), proyek ini dirancang untuk di-hosting dengan mudah di **GitHub Pages** dan menawarkan pengalaman visual tingkat lanjut.
+Proyek ini adalah **visualisasi interaktif Algoritma State Machine (FSM — Finite State Machine)** yang didemonstrasikan melalui siklus komunikasi arsitektur **Client-Server**. Dibangun dengan Vanilla HTML, CSS, dan JavaScript murni tanpa framework.
 
-## 🌟 Live Demo
-
-Akses simulasi interaktif ini secara langsung melalui GitHub Pages:
-**[https://rey-devp.github.io/client-server/](https://rey-devp.github.io/client-server/)**
+🔗 **Live Demo:** [https://rey-devp.github.io/client-server/](https://rey-devp.github.io/client-server/)
 
 ---
 
-## 🎯 Konsep Simulasi Client-Server
+## 🧠 Apa itu Algoritma State Machine?
 
-Dalam arsitektur **Client-Server**, peran dalam sistem dibagi secara spesifik:
+**Finite State Machine (FSM)** adalah model komputasi yang mendefinisikan perilaku sistem melalui sejumlah **state (kondisi)** yang terbatas, beserta aturan **transisi** di antara state-state tersebut.
 
-1. **Klien (Aplikasi Klien)**: Berfungsi sebagai antarmuka pengguna (contoh: browser atau aplikasi _mobile_). Klien merakit data _request_ dan mengirimkannya melalui internet.
-2. **Jaringan (Internet)**: Media perantara fisik atau nirkabel yang mengantarkan paket data menggunakan protokol (contoh: HTTP/TCP).
-3. **Server Backend**: Komputer tangguh yang selalu sedia (_listening_) untuk menerima _request_ Klien, memvalidasi keamanan, mengolah logika bisnis, dan seringkali berinteraksi dengan **Basis Data** untuk mengambil atau menyimpan informasi.
-4. **Response**: Setelah data selesai diolah, Server mengembalikan status (contoh: `200 OK`) beserta data hasilnya (biasanya format JSON) kembali ke Klien.
+### Komponen Formal FSM
 
-Proyek ini **bukan sekadar diagram statis**; melainkan sebuah sistem berbasis _state-machine_ di mana Anda bisa langsung mempraktekkan siklus di atas secara riil.
-
----
-
-## ✨ Fitur Utama
-
-- **Terminal Interaktif Nyata**: Anda dapat mengetik sendiri _Payload Request_ (seperti `GET /api/users` atau `POST /data`) pada kolom Aplikasi Klien.
-- **Logika Aliran Waktu-Nyata**: Terdapat animasi _Packet_ data fisik yang bergerak presisi mengikuti kawat/jalur SVG dinamis.
-- **Log Terminal Server**: Sisi Server menampilkan log terminal (_console_) sungguhan yang mencatat kapan paket diterima, kapan _query database_ dilakukan, dan kapan respons disiapkan.
-- **Desain UI/UX Premium (_Glassmorphism_)**: Antarmuka dirancang menyerupai kaca (_frosted glass_) dengan _Dark Mode_ elegan yang dipadukan dengan efek Neon Glow yang merespons perubahan _state_ jaringan.
-- **100% Responsif & Anti-Bug**: Jika Anda membuka proyek ini melalui perangkat _Mobile_ (HP), layout akan secara otomatis berubah menjadi kolom vertikal tanpa merusak sedikitpun animasi aliran data jalurnya (mendukung _resize_ dinamis).
+| Komponen | Notasi | Deskripsi |
+|---|---|---|
+| **States (Q)** | `{IDLE, REQUEST, PROCESS, RESPONSE}` | Himpunan kondisi yang mungkin ada dalam sistem |
+| **Alphabet / Events (Σ)** | `{USER_SEND, PACKET_ARRIVED, DB_QUERY_DONE, RESPONSE_RECEIVED}` | Himpunan event yang dapat diterima mesin |
+| **Transition Function (δ)** | `δ(state, event) → state'` | Fungsi yang menentukan state berikutnya |
+| **Initial State (q₀)** | `IDLE` | State awal saat sistem pertama berjalan |
+| **Final State** | `IDLE` (loop) | Sistem kembali ke state awal setelah satu siklus |
 
 ---
 
-## 📂 Struktur Direktori
+## 🔄 State Diagram Client-Server
 
-```text
-├── index.html        # Kerangka UI, Terminal Mockup, dan Jalur SVG
-├── css/
-│   ├── base.css      # Variabel warna dasar, background glow, typography
-│   ├── diagram.css   # Layout CSS Grid utama dan styling Glassmorphism
-│   └── animation.css # Logika animasi interaktif dan transisi state
-└── js/
-    └── simulation.js # State-machine simulasi, manipulasi DOM, dan gerak SVG
+```
+                  ┌──────────────────────────────────────────┐
+                  │                                          │
+                  ▼               RESPONSE_RECEIVED()        │
+              ┌───────┐                                      │
+    START ───►│  IDLE │                                      │
+              └───┬───┘                                      │
+                  │ USER_SEND()                              │
+                  ▼                                          │
+            ┌─────────┐                                      │
+            │ REQUEST │                                      │
+            └────┬────┘                                      │
+                 │ PACKET_ARRIVED()                          │
+                 ▼                                           │
+           ┌─────────┐                                       │
+           │ PROCESS │                                       │
+           └────┬────┘                                       │
+                │ DB_QUERY_DONE()                            │
+                ▼                                           │
+          ┌──────────┐                                      │
+          │ RESPONSE │──────────────────────────────────────┘
+          └──────────┘
 ```
 
-_(Perhatian: File JS lama seperti `main.js`, `scenes.js`, dan `animation-controller.js` tidak lagi digunakan karena seluruh kecerdasan simulasi kini telah disatukan secara efisien ke dalam `simulation.js`)_
+---
+
+## 💻 Pseudocode Algoritma
+
+```javascript
+// Algoritma State Machine — Client-Server
+let currentState = IDLE
+
+function handleEvent(event) {
+  switch (currentState) {
+
+    case IDLE:
+      if (event == 'USER_SEND') {
+        currentState = REQUEST
+        buildHttpRequest()
+      } break
+
+    case REQUEST:
+      // paket melintasi jaringan
+      if (event == 'PACKET_ARRIVED') {
+        currentState = PROCESS
+        runBusinessLogic()
+      } break
+
+    case PROCESS:
+      // server + database query
+      if (event == 'DB_QUERY_DONE') {
+        currentState = RESPONSE
+        buildHttpResponse()
+      } break
+
+    case RESPONSE:
+      // respons kembali ke klien
+      if (event == 'RESPONSE_RECEIVED') {
+        currentState = IDLE
+        updateClientUI()
+      } break
+
+  } // end switch
+}
+```
 
 ---
 
-## 🚀 Menjalankan Secara Lokal
+## 🔁 Tabel Transisi State
 
-**Cara Termudah (No-Install)**:  
-Cukup _double-click_ atau _drag-and-drop_ file `index.html` ke dalam _browser_ (Chrome/Firefox/Edge) Anda.
+| State Asal | Event Pemicu | State Tujuan | Aksi yang Dijalankan |
+|---|---|---|---|
+| `IDLE` | `USER_SEND()` | `REQUEST` | `buildHttpRequest()` |
+| `REQUEST` | `PACKET_ARRIVED()` | `PROCESS` | `runBusinessLogic()` |
+| `PROCESS` | `DB_QUERY_DONE()` | `RESPONSE` | `buildHttpResponse()` |
+| `RESPONSE` | `RESPONSE_RECEIVED()` | `IDLE` | `updateClientUI()` |
 
-**Menggunakan Server Lokal (Direkomendasikan)**:  
-Jika Anda menggunakan VS Code, Anda bisa menginstal ekstensi **Live Server** dan mengklik "Go Live".  
-Atau, jika Anda memiliki Python:
+---
+
+## 🗺️ Penjelasan Setiap State
+
+### 🔵 `IDLE` — Menunggu Event
+- Sistem aktif namun tidak memproses apapun
+- Server **listening** di port 8080, siap menerima koneksi
+- Transisi terjadi saat pengguna men-trigger `USER_SEND()`
+
+### 🟡 `REQUEST` — Membangun & Mengirim Permintaan
+- Klien membungkus aksi pengguna menjadi paket **HTTP Request** (GET/POST)
+- Paket dikirim melalui jaringan menggunakan protokol **TCP/IP**
+- State ini bertahan hingga paket tiba di server dan `PACKET_ARRIVED()` ter-trigger
+
+### 🔵 `PROCESS` — Memproses di Server
+- Server menerima request, menjalankan **business logic**
+- Melakukan query ke **database** untuk membaca atau menulis data
+- State ini berakhir saat query selesai dan `DB_QUERY_DONE()` ter-trigger
+
+### 🟢 `RESPONSE` — Mengembalikan Hasil
+- Server membangun **HTTP Response** (200 OK + data JSON)
+- Paket response dikirim balik melalui jaringan ke klien
+- Siklus selesai saat klien menerima response dan `RESPONSE_RECEIVED()` ter-trigger
+- Sistem kembali ke `IDLE` untuk siklus berikutnya
+
+---
+
+## 🏗️ Implementasi dalam Kode
+
+### Arsitektur File
+
+```
+client-server/
+├── index.html                    ← Struktur UI 3-panel
+├── css/
+│   ├── base.css                  ← Design system: variabel warna per state, typography
+│   ├── diagram.css               ← Layout, FSM diagram, pseudocode panel, step navigator
+│   └── animation.css             ← Micro-animations sinkronisasi antar panel
+└── js/
+    ├── animation-controller.js   ← Class AnimationController: play/pause/step state machine
+    ├── scenes.js                 ← Data 7 langkah siklus FSM (machineState, pseudoLines, events)
+    └── main.js                   ← Controller utama: sinkronisasi 3 panel + packet animation
+```
+
+### Komponen Kode Utama
+
+#### `AnimationController` — Mesin Pengatur Langkah
+```javascript
+class AnimationController {
+  constructor({ scenes, intervalMs, onStepChange }) { ... }
+  play()        // Mulai autoplay
+  pause()       // Hentikan autoplay
+  next(manual)  // Maju satu langkah
+  prev(manual)  // Mundur satu langkah
+  reset()       // Kembali ke langkah 0
+  goTo(step)    // Loncat ke langkah tertentu
+}
+```
+
+#### `scenes.js` — Definisi Setiap State
+Setiap scene memetakan satu langkah FSM ke:
+- `machineState` → node FSM mana yang aktif
+- `pseudoLines` → baris pseudocode mana yang di-highlight
+- `activeNodes` → komponen client/server mana yang aktif
+- `packet` → posisi dan animasi paket data
+
+#### `main.js` — Sinkronisasi Tiga Panel
+Fungsi `renderStep(step, scene)` dipanggil setiap kali state berubah dan memperbarui:
+1. **Panel FSM (kiri)** — node aktif dengan neon glow
+2. **Panel Visualisasi (tengah)** — animasi paket SVG + log server
+3. **Panel Pseudocode (kanan)** — highlight baris yang berjalan
+
+---
+
+## ✨ Fitur Visualisasi
+
+- **State Diagram Interaktif** — Diagram FSM formal di panel kiri, node aktif bercahaya sesuai state
+- **Animasi Paket Real-time** — Paket data bergerak di jalur SVG dari Client → Network → Server → kembali
+- **Live Pseudocode Highlight** — Baris kode yang sedang "berjalan" di-highlight secara sinkron
+- **Server Log Terminal** — Log real-time mencatat setiap transisi state
+- **Step Navigator** — Kontrol Play/Pause/Next/Prev/Reset + keyboard shortcut (`←` `→` `Space`)
+- **Responsif** — Layout otomatis menyesuaikan perangkat mobile
+
+---
+
+## 🚀 Cara Menjalankan
+
+**Double-click** `index.html` langsung di browser, atau gunakan server lokal:
 
 ```bash
+# Python
 python -m http.server 8080
+
+# Node.js (npx)
+npx serve .
 ```
 
-Lalu buka `http://localhost:8080` di browser.
+Lalu buka `http://localhost:8080`.
+
+**Keyboard Shortcuts:**
+| Tombol | Fungsi |
+|---|---|
+| `Space` | Play / Pause |
+| `→` | Langkah berikutnya |
+| `←` | Langkah sebelumnya |
 
 ---
 
 ## 📜 Lisensi
 
-Kode ini disusun untuk keperluan demonstrasi akademik arsitektur jaringan. Modifikasi sepenuhnya diperbolehkan.
+Dibuat untuk keperluan demonstrasi akademik algoritma pemrograman. Modifikasi diperbolehkan.
